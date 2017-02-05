@@ -2,11 +2,20 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGTH = 600;
+
 int main( int argc, char* args[] ){
-	if (SDL_Init(SDL_INIT_VIDEO) != 0){
-		printf("%s\n", SDL_GetError());
-		return 1;
-	}
+	
+	//SDL inicializálása
+	SDL_Init(SDL_INIT_VIDEO);
+	
+	//SDL ablak létrehozása
+	SDL_Window *window = SDL_CreateWindow("Hello SDL2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL);
+
+	SDL_Delay(100);
+	SDL_DestroyWindow(window);
+
 	SDL_Quit();
 	return 0;
 }
