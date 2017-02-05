@@ -11,9 +11,11 @@ int main( int argc, char* args[] ){
 	SDL_Init(SDL_INIT_VIDEO);
 	
 	//SDL ablak létrehozása
-	SDL_Window *window = SDL_CreateWindow("Hello SDL2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL);
+	SDL_Window *window = SDL_CreateWindow("Hello SDL2", 
+		SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+		WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL);
 
-	SDL_Delay(100);
+	SDL_Delay(1000);
 	SDL_DestroyWindow(window);
 
 	SDL_Quit();
