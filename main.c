@@ -26,9 +26,8 @@ int main( int argc, char* args[] ){
 		fprintf( stderr, "SDL-t nem sikerült inicializálni! SDL_Error: %s\n", SDL_GetError() );
 	}
 	else{
+
 		//SDL ablak létrehozása
-
-
 		SDL_Window *window = SDL_CreateWindow( "Hello SDL2", 
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
 			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
@@ -36,7 +35,7 @@ int main( int argc, char* args[] ){
 	 		fprintf( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
 	 	}
 	 	else{
-		 	//Get window surface 
+		 	//Window surface
 		 	screenSurface = SDL_GetWindowSurface( window );
 		 	
 		 	//Kitölti az ablakot fehérrel
@@ -46,17 +45,6 @@ int main( int argc, char* args[] ){
 		 	SDL_UpdateWindowSurface( window );
 	 	}
 
-	/*
-		while( !quit ){
-			while( SDL_PollEvent( &e ) != 0 ){
-				if( e.type == SDL_QUIT ) { 
-					quit = true;
-				}
-			}
-			SDL_Delay(50);
-		}
-		*/
-
 		while( quit ){
 			if( SDL_PollEvent( &e ) != 0 ) {
 				if( e.type == SDL_QUIT ) { 
@@ -65,16 +53,20 @@ int main( int argc, char* args[] ){
 				else if( e.type == SDL_KEYDOWN ){
 					switch( e.key.keysym.sym ){
 						case SDLK_w:
-							printf( "W key\n" );
+						case SDLK_UP:
+							printf( "W & UP\n" );
 							break;
 						case SDLK_a:
-							printf( "A key\n" );
+						case SDLK_LEFT:
+							printf( "A & LEFT\n" );
 							break;
 						case SDLK_s:
-							printf( "S key\n" );
+						case SDLK_RIGHT:
+							printf( "S & RIGHT\n" );
 							break;
 						case SDLK_d:
-							printf( "D key\n" );
+						case SDLK_DOWN:
+							printf( "D & DOWN\n" );
 							break;
 						case SDLK_q:
 							SDL_DestroyWindow( window );
