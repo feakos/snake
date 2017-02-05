@@ -20,7 +20,7 @@ int main( int argc, char* args[] ){
 	
 	//SDL inicializálása
 	if( SDL_Init( SDL_INIT_VIDEO ) < 0 ){
-		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+		fprintf( stderr, "SDL-t nem sikerült inicializálni! SDL_Error: %s\n", SDL_GetError() );
 	}
 	else{
 		//SDL ablak létrehozása
@@ -28,17 +28,17 @@ int main( int argc, char* args[] ){
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
 			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
 	 	if( window == NULL ){
-	 		printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+	 		fprintf( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
 	 	}
 	 	else{
 		 	//Get window surface 
 		 	screenSurface = SDL_GetWindowSurface( window );
-		 	//Fill the surface white
+		 	
+		 	//Kitölti az ablakot fehérrel
 		 	SDL_FillRect( screenSurface, NULL, SDL_MapRGB( screenSurface->format, 0xFF, 0xFF, 0xFF ) );
+		 	
 		 	//Update the surface 
 		 	SDL_UpdateWindowSurface( window );
-		 	//Wait two seconds
-		 	SDL_Delay( 2000 );
 	 	}
 
 	/*
@@ -66,5 +66,6 @@ int main( int argc, char* args[] ){
 	
 	SDL_DestroyWindow( window );
 	SDL_Quit();
+
 	return 0;
 }
