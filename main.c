@@ -9,7 +9,7 @@ const int WINDOW_HEIGTH = 800;
 
 int main( int argc, char* args[] ){
 	
-	bool quit = false;
+	bool quit = true;
 	SDL_Event e;
 
 	//Window
@@ -57,10 +57,10 @@ int main( int argc, char* args[] ){
 		}
 		*/
 
-		while( !quit ){
-			if( SDL_WaitEvent( &e ) ) {
+		while( quit ){
+			if( SDL_PollEvent( &e ) != 0 ) {
 				if( e.type == SDL_QUIT ) { 
-					quit = true;
+					quit = false;
 				}
 				else if( e.type == SDL_KEYDOWN ){
 					switch( e.key.keysym.sym ){
@@ -75,6 +75,10 @@ int main( int argc, char* args[] ){
 							break;
 						case SDLK_d:
 							printf( "D key\n" );
+							break;
+						case SDLK_q:
+							SDL_DestroyWindow( window );
+							exit(1);
 							break;
 					}
 				}
