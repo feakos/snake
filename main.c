@@ -36,6 +36,9 @@ int main( int argc, char* args[] ){
 				quit = true;
 			}
 		}
+		else{
+			SDL_Delay(50);
+		}
 	}
 	
 	SDL_DestroyWindow( window );
