@@ -14,9 +14,7 @@ typedef struct {
 } directions;
 
 int main ( int argc, char* args[] ){
-	directions dir = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	bool quit = true;
-	SDL_Event event;
 
 	//Window
  	SDL_Window* window = NULL;
@@ -27,6 +25,12 @@ int main ( int argc, char* args[] ){
 	//Render
 	SDL_Renderer *render;
 
+	//SDL key event
+	SDL_Event event;
+
+	//Direction default values
+	directions dir = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
 	//SDL inicializálása
 	if( SDL_Init ( SDL_INIT_VIDEO ) < 0 ){
 		fprintf ( stderr, "SDL-t nem sikerült inicializálni! SDL_Error: %s\n", SDL_GetError() );
@@ -34,11 +38,12 @@ int main ( int argc, char* args[] ){
 	else{
 
 		//SDL ablak létrehozása
-		SDL_Window *window = SDL_CreateWindow ( "Hello SDL2", 
+		window = SDL_CreateWindow ( "Hello SDL2", 
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
 			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
 	 	if ( window == NULL ) {
 	 		fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
+	 		exit (1);
 	 	}
 	 	
 	 	//SDL renderer létrehozása
@@ -53,17 +58,21 @@ int main ( int argc, char* args[] ){
 	 	//Update the surface 
 	 	SDL_UpdateWindowSurface ( window );
 	 	
+	 	//Player
+	 	//SDL_Rect Player;
+
 	 	//Main loop! :)
-		while( quit ) {
-			if( SDL_PollEvent( &event ) != 0 ) {
-				if( event.type == SDL_QUIT ) { 
+		while ( quit ) {
+			if ( SDL_PollEvent ( &event ) != 0 ) {
+				if ( event.type == SDL_QUIT ) { 
 					quit = false;
+					exit (0);
 				}
 				if (event.type == SDL_KEYDOWN) {
 					//A q billentyű hatására kilép, ideiglenes megoldás.
 					if( event.key.keysym.sym == SDLK_q ) {
-						printf( "Quit!\n" );
-						exit(1);
+						printf ( "Quit!\n" );
+						exit (2);
 					}
 					//Ellenőrzi a billentyűlenyomást és megváltoztatja irányt annak megfelelően
 					if ( ( dir.DOWN == false && event.key.keysym.scancode == SDL_SCANCODE_UP ) || 
@@ -80,7 +89,7 @@ int main ( int argc, char* args[] ){
 						dir.DOWN = false;
 						dir.S = false;
 						
-						printf( "UP & W\n" );
+						printf ( "UP & W\n" );
 					}
 					else if ( ( dir.RIGHT == false && event.key.keysym.scancode == SDL_SCANCODE_LEFT ) || 
 						( dir.D == false && event.key.keysym.scancode == SDL_SCANCODE_A ) ) {
@@ -96,7 +105,7 @@ int main ( int argc, char* args[] ){
 						dir.DOWN = false;
 						dir.S = false;
 						
-						printf( "LEFT & A\n" );						
+						printf ( "LEFT & A\n" );						
 					}
 					else if ( ( dir.UP == false && event.key.keysym.scancode == SDL_SCANCODE_DOWN ) ||
 						( dir.W == false && event.key.keysym.scancode == SDL_SCANCODE_S ) ) {
@@ -112,7 +121,7 @@ int main ( int argc, char* args[] ){
 						dir.DOWN = true;
 						dir.S = true;
 						
-						printf( "DOWN & S\n" );						
+						printf ( "DOWN & S\n" );						
 					}
 					else if ( ( dir.LEFT == false && event.key.keysym.scancode == SDL_SCANCODE_RIGHT ) || 
 						( dir.A == false && event.key.keysym.scancode == SDL_SCANCODE_D ) ) {
@@ -128,32 +137,32 @@ int main ( int argc, char* args[] ){
 						dir.DOWN = false;
 						dir.S = false;
 						
-						printf( "RIGHT & D\n" );						
+						printf ( "RIGHT & D\n" );						
 					}				
 				}
 
 /*
-				else if( event.type == SDL_KEYDOWN ){
-					switch( event.key.keysym.sym ){
+				else if ( event.type == SDL_KEYDOWN ) {
+					switch ( event.key.keysym.sym ) {
 						case SDLK_w:
 						case SDLK_UP:
-							printf( "W & UP\n" );
+							printf ( "W & UP\n" );
 							break;
 						case SDLK_a:
 						case SDLK_LEFT:
-							printf( "A & LEFT\n" );
+							printf ( "A & LEFT\n" );
 							break;
 						case SDLK_s:
 						case SDLK_RIGHT:
-							printf( "S & RIGHT\n" );
+							printf ( "S & RIGHT\n" );
 							break;
 						case SDLK_d:
 						case SDLK_DOWN:
-							printf( "D & DOWN\n" );
+							printf ( "D & DOWN\n" );
 							break;
 						case SDLK_q:
-							SDL_DestroyWindow( window );
-							exit(1);
+							SDL_DestroyWindow ( window );
+							exit (1);
 							break;
 					}
 				}*/
