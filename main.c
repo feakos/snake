@@ -1,14 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <unistd.h>
-#include <SDL2/SDL.h>
+#include <SDL2/SDL.h> //Main SDL library
+#include <SDL2/SDL_ttf.h> //Optional SDL library used to display text using renderers
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGTH = 800;
 
+//Directions
+typedef struct {
+	bool W, A, S, D;
+	bool UP, LEFT, DOWN, RIGHT;
+} directions;
+
 int main ( int argc, char* args[] ){
-	
+	directions dir = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	bool quit = true;
 	SDL_Event event;
 
@@ -20,16 +26,6 @@ int main ( int argc, char* args[] ){
 	
 	//Render
 	SDL_Renderer *render;
-
-    //Booleans to control the movement
-	bool UP = false;
-	bool W = false;
-	bool DOWN = false;
-	bool S = false;
-	bool RIGHT = false;
-	bool D = false;
-	bool LEFT = false;
-	bool A = false;
 
 	//SDL inicializálása
 	if( SDL_Init ( SDL_INIT_VIDEO ) < 0 ){
@@ -45,88 +41,92 @@ int main ( int argc, char* args[] ){
 	 		fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
 	 	}
 	 	
-	 	render = SDL_CreateRenderer (window, -1, SDL_RENDERER_ACCELERATED);
-
+	 	//SDL renderer létrehozása
+	 	render = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
 
 	 	//Window surface
 		screenSurface = SDL_GetWindowSurface ( window );
+
 		//Kitölti az ablakot fehérrel
 		SDL_FillRect ( screenSurface, NULL, SDL_MapRGB ( screenSurface->format, 0xFF, 0xFF, 0xFF ) );
+
 	 	//Update the surface 
 	 	SDL_UpdateWindowSurface ( window );
 	 	
+	 	//Main loop! :)
 		while( quit ) {
 			if( SDL_PollEvent( &event ) != 0 ) {
 				if( event.type == SDL_QUIT ) { 
 					quit = false;
 				}
 				if (event.type == SDL_KEYDOWN) {
+					//A q billentyű hatására kilép, ideiglenes megoldás.
 					if( event.key.keysym.sym == SDLK_q ) {
 						printf( "Quit!\n" );
 						exit(1);
 					}
-					//Then check for the key being pressed and change direction accordingly
-					if ( ( DOWN == false && event.key.keysym.scancode == SDL_SCANCODE_UP ) || 
-						( S == false && event.key.keysym.scancode == SDL_SCANCODE_W ) ) {
-						UP = true;
-						W = true;
+					//Ellenőrzi a billentyűlenyomást és megváltoztatja irányt annak megfelelően
+					if ( ( dir.DOWN == false && event.key.keysym.scancode == SDL_SCANCODE_UP ) || 
+						( dir.S == false && event.key.keysym.scancode == SDL_SCANCODE_W ) ) {
+						dir.UP = true;
+						dir.W = true;
 						
-						LEFT = false;
-						A = false;
+						dir.LEFT = false;
+						dir.A = false;
 						
-						RIGHT = false;
-						D = false;
+						dir.RIGHT = false;
+						dir.D = false;
 						
-						DOWN = false;
-						S = false;
+						dir.DOWN = false;
+						dir.S = false;
 						
 						printf( "UP & W\n" );
 					}
-					else if ( ( RIGHT == false && event.key.keysym.scancode == SDL_SCANCODE_LEFT ) || 
-						( D == false && event.key.keysym.scancode == SDL_SCANCODE_A ) ) {
-						UP = false;
-						W = false;
+					else if ( ( dir.RIGHT == false && event.key.keysym.scancode == SDL_SCANCODE_LEFT ) || 
+						( dir.D == false && event.key.keysym.scancode == SDL_SCANCODE_A ) ) {
+						dir.UP = false;
+						dir.W = false;
 						
-						LEFT = true;
-						A = true;
+						dir.LEFT = true;
+						dir.A = true;
 						
-						RIGHT = false;
-						D = false;
+						dir.RIGHT = false;
+						dir.D = false;
 						
-						DOWN = false;
-						S = false;
+						dir.DOWN = false;
+						dir.S = false;
 						
 						printf( "LEFT & A\n" );						
 					}
-					else if ( ( UP == false && event.key.keysym.scancode == SDL_SCANCODE_DOWN ) ||
-						( W == false && event.key.keysym.scancode == SDL_SCANCODE_S ) ) {
-						UP = false;
-						W = false;
+					else if ( ( dir.UP == false && event.key.keysym.scancode == SDL_SCANCODE_DOWN ) ||
+						( dir.W == false && event.key.keysym.scancode == SDL_SCANCODE_S ) ) {
+						dir.UP = false;
+						dir.W = false;
 						
-						LEFT = false;
-						A = false;
+						dir.LEFT = false;
+						dir.A = false;
 						
-						RIGHT = false;
-						D = false;
+						dir.RIGHT = false;
+						dir.D = false;
 						
-						DOWN = true;
-						S = true;
+						dir.DOWN = true;
+						dir.S = true;
 						
 						printf( "DOWN & S\n" );						
 					}
-					else if ( ( LEFT == false && event.key.keysym.scancode == SDL_SCANCODE_RIGHT ) || 
-						( A == false && event.key.keysym.scancode == SDL_SCANCODE_D ) ) {
-						UP = false;
-						W = false;
+					else if ( ( dir.LEFT == false && event.key.keysym.scancode == SDL_SCANCODE_RIGHT ) || 
+						( dir.A == false && event.key.keysym.scancode == SDL_SCANCODE_D ) ) {
+						dir.UP = false;
+						dir.W = false;
 						
-						LEFT = false;
-						A = false;
+						dir.LEFT = false;
+						dir.A = false;
 						
-						RIGHT = true;
-						D = true;
+						dir.RIGHT = true;
+						dir.D = true;
 						
-						DOWN = false;
-						S = false;
+						dir.DOWN = false;
+						dir.S = false;
 						
 						printf( "RIGHT & D\n" );						
 					}				
