@@ -1,3 +1,9 @@
+/*
+	https://www.youtube.com/watch?v=Vhw_GVfFzGE#t=167.294189
+	https://www.youtube.com/watch?v=HfX8ByUXfPY
+	https://www.youtube.com/watch?v=rR7xWyUWcBA
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -9,9 +15,13 @@ const int WINDOW_HEIGTH = 800;
 
 //Directions
 typedef struct {
-	bool W, A, S, D;
 	bool UP, LEFT, DOWN, RIGHT;
 } directions;
+
+void createMap();
+void renderPlayer();
+void renderScore();
+bool checkColloison();
 
 int main ( int argc, char* args[] ){
 	bool quit = true;
@@ -29,7 +39,7 @@ int main ( int argc, char* args[] ){
 	SDL_Event event;
 
 	//Direction default values
-	directions dir = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	directions dir = { 0, 0, 0, 0 };
 
 	//SDL inicializálása
 	if( SDL_Init ( SDL_INIT_VIDEO ) < 0 ){
@@ -76,66 +86,38 @@ int main ( int argc, char* args[] ){
 					}
 					//Ellenőrzi a billentyűlenyomást és megváltoztatja irányt annak megfelelően
 					if ( ( dir.DOWN == false && event.key.keysym.scancode == SDL_SCANCODE_UP ) || 
-						( dir.S == false && event.key.keysym.scancode == SDL_SCANCODE_W ) ) {
+						( dir.DOWN == false && event.key.keysym.scancode == SDL_SCANCODE_W ) ) {
 						dir.UP = true;
-						dir.W = true;
-						
 						dir.LEFT = false;
-						dir.A = false;
-						
 						dir.RIGHT = false;
-						dir.D = false;
-						
 						dir.DOWN = false;
-						dir.S = false;
 						
 						printf ( "UP & W\n" );
 					}
 					else if ( ( dir.RIGHT == false && event.key.keysym.scancode == SDL_SCANCODE_LEFT ) || 
-						( dir.D == false && event.key.keysym.scancode == SDL_SCANCODE_A ) ) {
+						( dir.RIGHT == false && event.key.keysym.scancode == SDL_SCANCODE_A ) ) {
 						dir.UP = false;
-						dir.W = false;
-						
 						dir.LEFT = true;
-						dir.A = true;
-						
 						dir.RIGHT = false;
-						dir.D = false;
-						
 						dir.DOWN = false;
-						dir.S = false;
 						
 						printf ( "LEFT & A\n" );						
 					}
 					else if ( ( dir.UP == false && event.key.keysym.scancode == SDL_SCANCODE_DOWN ) ||
-						( dir.W == false && event.key.keysym.scancode == SDL_SCANCODE_S ) ) {
+						( dir.UP == false && event.key.keysym.scancode == SDL_SCANCODE_S ) ) {
 						dir.UP = false;
-						dir.W = false;
-						
 						dir.LEFT = false;
-						dir.A = false;
-						
 						dir.RIGHT = false;
-						dir.D = false;
-						
 						dir.DOWN = true;
-						dir.S = true;
-						
+
 						printf ( "DOWN & S\n" );						
 					}
 					else if ( ( dir.LEFT == false && event.key.keysym.scancode == SDL_SCANCODE_RIGHT ) || 
-						( dir.A == false && event.key.keysym.scancode == SDL_SCANCODE_D ) ) {
+						( dir.LEFT == false && event.key.keysym.scancode == SDL_SCANCODE_D ) ) {
 						dir.UP = false;
-						dir.W = false;
-						
 						dir.LEFT = false;
-						dir.A = false;
-						
 						dir.RIGHT = true;
-						dir.D = true;
-						
 						dir.DOWN = false;
-						dir.S = false;
 						
 						printf ( "RIGHT & D\n" );						
 					}				
