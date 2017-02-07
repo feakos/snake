@@ -4,6 +4,23 @@
 	https://www.youtube.com/watch?v=rR7xWyUWcBA
 */
 
+/*
+	// Clear the window and make it all green
+	SDL_RenderClear( render );
+
+	// Change color to blue
+	SDL_SetRenderDrawColor( render, 0, 0, 255, 255 );
+
+	// Render our "player"
+	SDL_RenderFillRect( render, &player );
+
+	// Change color to green
+	SDL_SetRenderDrawColor( render, 0, 255, 0, 255 );
+
+	// Render the changes above
+	SDL_RenderPresent( render );
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -29,17 +46,21 @@ int main ( int argc, char* args[] ){
 	//Window
  	SDL_Window* window = NULL;
 
-	//Surface
- 	SDL_Surface* screenSurface = NULL;
-	
 	//Render
-	SDL_Renderer *render;
+	SDL_Renderer *render = NULL;
 
 	//SDL key event
 	SDL_Event event;
 
 	//Direction default values
 	directions dir = { 0, 0, 0, 0 };
+
+	//Player
+	SDL_Rect player;
+	player.w = 20;
+	player.h = 20;
+	player.x = 0;
+	player.y = 0;
 
 	//SDL inicializálása
 	if( SDL_Init ( SDL_INIT_VIDEO ) < 0 ){
@@ -49,28 +70,22 @@ int main ( int argc, char* args[] ){
 
 		//SDL ablak létrehozása
 		window = SDL_CreateWindow ( "Hello SDL2", 
-			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
 			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
 	 	if ( window == NULL ) {
 	 		fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
 	 		exit (1);
 	 	}
-	 	
+
 	 	//SDL renderer létrehozása
 	 	render = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
 
-	 	//Window surface
-		screenSurface = SDL_GetWindowSurface ( window );
-
-		//Kitölti az ablakot fehérrel
-		SDL_FillRect ( screenSurface, NULL, SDL_MapRGB ( screenSurface->format, 0xFF, 0xFF, 0xFF ) );
-
-	 	//Update the surface 
-	 	SDL_UpdateWindowSurface ( window );
+		//SDL_RenderClear ( render );
+		SDL_SetRenderDrawColor ( render, 255, 255, 255, 255 );
+		SDL_RenderFillRect ( render, &player);
+		//SDL_SetRenderDrawColor ( render, 0, 0, 0, 0 );
+		//SDL_RenderPresent ( render );
 	 	
-	 	//Player
-	 	//SDL_Rect Player;
-
 	 	//Main loop! :)
 		while ( quit ) {
 			if ( SDL_PollEvent ( &event ) != 0 ) {
@@ -91,8 +106,9 @@ int main ( int argc, char* args[] ){
 						dir.LEFT = false;
 						dir.RIGHT = false;
 						dir.DOWN = false;
-						
-						printf ( "UP & W\n" );
+						--player.y;
+
+						//printf ( "UP & W\n" );
 					}
 					else if ( ( dir.RIGHT == false && event.key.keysym.scancode == SDL_SCANCODE_LEFT ) || 
 						( dir.RIGHT == false && event.key.keysym.scancode == SDL_SCANCODE_A ) ) {
@@ -100,8 +116,9 @@ int main ( int argc, char* args[] ){
 						dir.LEFT = true;
 						dir.RIGHT = false;
 						dir.DOWN = false;
-						
-						printf ( "LEFT & A\n" );						
+						--player.x;
+
+						//printf ( "LEFT & A\n" );						
 					}
 					else if ( ( dir.UP == false && event.key.keysym.scancode == SDL_SCANCODE_DOWN ) ||
 						( dir.UP == false && event.key.keysym.scancode == SDL_SCANCODE_S ) ) {
@@ -109,8 +126,9 @@ int main ( int argc, char* args[] ){
 						dir.LEFT = false;
 						dir.RIGHT = false;
 						dir.DOWN = true;
+						++player.y;
 
-						printf ( "DOWN & S\n" );						
+						//printf ( "DOWN & S\n" );						
 					}
 					else if ( ( dir.LEFT == false && event.key.keysym.scancode == SDL_SCANCODE_RIGHT ) || 
 						( dir.LEFT == false && event.key.keysym.scancode == SDL_SCANCODE_D ) ) {
@@ -118,46 +136,27 @@ int main ( int argc, char* args[] ){
 						dir.LEFT = false;
 						dir.RIGHT = true;
 						dir.DOWN = false;
-						
-						printf ( "RIGHT & D\n" );						
-					}				
-				}
+						++player.x;
 
-/*
-				else if ( event.type == SDL_KEYDOWN ) {
-					switch ( event.key.keysym.sym ) {
-						case SDLK_w:
-						case SDLK_UP:
-							printf ( "W & UP\n" );
-							break;
-						case SDLK_a:
-						case SDLK_LEFT:
-							printf ( "A & LEFT\n" );
-							break;
-						case SDLK_s:
-						case SDLK_RIGHT:
-							printf ( "S & RIGHT\n" );
-							break;
-						case SDLK_d:
-						case SDLK_DOWN:
-							printf ( "D & DOWN\n" );
-							break;
-						case SDLK_q:
-							SDL_DestroyWindow ( window );
-							exit (1);
-							break;
+						//printf ( "RIGHT & D\n" );						
 					}
-				}*/
+
+				}
+				SDL_RenderClear ( render );
+				SDL_SetRenderDrawColor ( render, 0, 0, 0, 0 );
+				SDL_RenderFillRect ( render, &player);
+				SDL_SetRenderDrawColor ( render, 255, 255, 255, 255 );
+				SDL_RenderPresent ( render );
+
 			}
 			else{
-				SDL_Delay( 50 );
+				SDL_Delay (50);
 			}
 		}
 	}
 
-    SDL_RenderPresent( render );
-	SDL_DestroyWindow( window );
-	SDL_Quit();
+	SDL_DestroyWindow ( window );
+	SDL_Quit ();
 
 	return 0;
 }
