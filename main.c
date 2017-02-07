@@ -22,29 +22,99 @@
 */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h> //Main SDL library
 #include <SDL2/SDL_ttf.h> //Optional SDL library used to display text using renderers
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGTH = 800;
+const uint32_t WINDOW_WIDTH = 800;
+const uint32_t WINDOW_HEIGTH = 800;
 
 //Directions
-typedef struct {
-	bool UP, LEFT, DOWN, RIGHT;
-} directions;
+typedef enum { 
+	DIR_NOCHANGE = -2,
+	DIR_STOP = -1,
+	DIR_UP = 0,
+	DIR_LEFT = 1,
+	DIR_DOWN = 2,
+	DIR_RIGHT = 3,
+ } direction;
 
-void createMap();
-void renderPlayer();
-void renderScore();
-bool checkColloison();
+static direction get_dir_from_key ( SDL_Scancode scancode ) {
+	direction result = DIR_STOP;
+
+	switch ( scancode ){
+		case SDL_SCANCODE_UP:
+		case SDL_SCANCODE_W:
+			result = DIR_UP;
+			break;
+		case SDL_SCANCODE_LEFT:
+		case SDL_SCANCODE_A:
+			result = DIR_LEFT;
+			break;
+		case SDL_SCANCODE_DOWN:
+		case SDL_SCANCODE_S:
+			result = DIR_DOWN;
+			break;
+		case SDL_SCANCODE_RIGHT:
+		case SDL_SCANCODE_D:
+			result = DIR_RIGHT;
+			break;
+		default:
+			result = DIR_NOCHANGE;
+			break;
+	}
+	return result;
+}
+
+void init();
+void destroy();
+
+bool CreateWindow ( ) {
+	SDL_Window *window = SDL_CreateWindow ( "SNAKE beta 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
+
+	if ( window == NULL ) {
+	 	fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
+		return false;
+	}
+
+	return true;
+}
+
+bool CreateRenderer ( SDL_Window *window ) {
+	SDL_Renderer *renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
+
+	if ( renderer == NULL ) {
+	 	fprintf ( stderr, "A renderer-t nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
+		return false;
+	}
+
+	return true;
+}
+
+void renderPlayer ( SDL_Renderer *renderer, SDL_Rect player, int x, int y, int scale ) {
+	player.w = scale;
+	player.h = scale;
+
+	SDL_SetRenderDrawColor ( renderer, 0, 0, 0, 0 );
+
+	player.x = x;
+	player.y = y;
+
+	SDL_RenderFillRect ( renderer, &player );
+}
+
+void renderScore ();
+void createMap ();
+bool checkColloison ();
 
 int main ( int argc, char* args[] ){
 	bool quit = true;
 
 	//Window
- 	SDL_Window* window = NULL;
+ 	SDL_Window *window = NULL;
 
 	//Render
 	SDL_Renderer *render = NULL;
@@ -53,20 +123,19 @@ int main ( int argc, char* args[] ){
 	SDL_Event event;
 
 	//Direction default values
-	directions dir = { 0, 0, 0, 0 };
+	direction dir = DIR_STOP;
 
 	//Player
-	SDL_Rect player;
-	player.w = 20;
-	player.h = 20;
-	player.x = 0;
-	player.y = 0;
+	int scale = 20;
+	SDL_Rect player = { 0, 0, scale, scale };
 
 	//SDL inicializálása
 	if( SDL_Init ( SDL_INIT_VIDEO ) < 0 ){
 		fprintf ( stderr, "SDL-t nem sikerült inicializálni! SDL_Error: %s\n", SDL_GetError() );
 	}
 	else{
+		//SDL window és renderer egyszerre
+		//SDL_CreateWindowAndRenderer ( );
 
 		//SDL ablak létrehozása
 		window = SDL_CreateWindow ( "Hello SDL2", 
@@ -88,63 +157,51 @@ int main ( int argc, char* args[] ){
 	 	
 	 	//Main loop! :)
 		while ( quit ) {
+			SDL_RenderClear ( render );
 			if ( SDL_PollEvent ( &event ) != 0 ) {
 				if ( event.type == SDL_QUIT ) { 
 					quit = false;
-					exit (0);
+					exit ( EXIT_FAILURE );
 				}
 				if (event.type == SDL_KEYDOWN) {
 					//A q billentyű hatására kilép, ideiglenes megoldás.
 					if( event.key.keysym.sym == SDLK_q ) {
 						printf ( "Quit!\n" );
-						exit (2);
-					}
-					//Ellenőrzi a billentyűlenyomást és megváltoztatja irányt annak megfelelően
-					if ( ( dir.DOWN == false && event.key.keysym.scancode == SDL_SCANCODE_UP ) || 
-						( dir.DOWN == false && event.key.keysym.scancode == SDL_SCANCODE_W ) ) {
-						dir.UP = true;
-						dir.LEFT = false;
-						dir.RIGHT = false;
-						dir.DOWN = false;
-						--player.y;
-
-						//printf ( "UP & W\n" );
-					}
-					else if ( ( dir.RIGHT == false && event.key.keysym.scancode == SDL_SCANCODE_LEFT ) || 
-						( dir.RIGHT == false && event.key.keysym.scancode == SDL_SCANCODE_A ) ) {
-						dir.UP = false;
-						dir.LEFT = true;
-						dir.RIGHT = false;
-						dir.DOWN = false;
-						--player.x;
-
-						//printf ( "LEFT & A\n" );						
-					}
-					else if ( ( dir.UP == false && event.key.keysym.scancode == SDL_SCANCODE_DOWN ) ||
-						( dir.UP == false && event.key.keysym.scancode == SDL_SCANCODE_S ) ) {
-						dir.UP = false;
-						dir.LEFT = false;
-						dir.RIGHT = false;
-						dir.DOWN = true;
-						++player.y;
-
-						//printf ( "DOWN & S\n" );						
-					}
-					else if ( ( dir.LEFT == false && event.key.keysym.scancode == SDL_SCANCODE_RIGHT ) || 
-						( dir.LEFT == false && event.key.keysym.scancode == SDL_SCANCODE_D ) ) {
-						dir.UP = false;
-						dir.LEFT = false;
-						dir.RIGHT = true;
-						dir.DOWN = false;
-						++player.x;
-
-						//printf ( "RIGHT & D\n" );						
+						exit ( EXIT_FAILURE );
 					}
 
+					direction new_dir = get_dir_from_key ( event.key.keysym.scancode );
+					switch ( new_dir ) {
+						case DIR_UP:
+							if ( dir != DIR_DOWN ) {
+								dir = new_dir;
+								player.y -= 10; 
+							}
+							break;
+						case DIR_LEFT:
+							if ( dir != DIR_RIGHT ){ 
+								dir = new_dir;
+								player.x -= 10; 
+							}
+							break;
+						case DIR_DOWN:
+							if ( dir != DIR_UP ) {
+								dir = new_dir;
+								player.y += 10; 
+							}
+							break;
+						case DIR_RIGHT:
+							if ( dir != DIR_LEFT ) {
+								dir = new_dir;
+								player.x += 10; 
+							}
+							break;
+						default:
+							break;
+					}
 				}
-				SDL_RenderClear ( render );
-				SDL_SetRenderDrawColor ( render, 0, 0, 0, 0 );
-				SDL_RenderFillRect ( render, &player);
+				
+				renderPlayer ( render, player, player.x, player.y, scale );
 				SDL_SetRenderDrawColor ( render, 255, 255, 255, 255 );
 				SDL_RenderPresent ( render );
 
@@ -155,6 +212,7 @@ int main ( int argc, char* args[] ){
 		}
 	}
 
+    SDL_DestroyRenderer ( render );
 	SDL_DestroyWindow ( window );
 	SDL_Quit ();
 
