@@ -68,6 +68,33 @@ static direction get_dir_from_key ( SDL_Scancode scancode ) {
 	return result;
 }
 
+Uint32 timer_callback ( Uint32 interval, void *param ) {
+
+/*
+    SDL_Event event;
+    SDL_UserEvent userevent;
+
+     In this example, our callback pushes an SDL_USEREVENT event
+    into the queue, and causes our callback to be called again at the
+    same interval: 
+
+    userevent.type = SDL_USEREVENT;
+    userevent.code = 0;
+    userevent.data1 = NULL;
+    userevent.data2 = NULL;
+
+    event.type = SDL_USEREVENT;
+    event.user = userevent;
+
+    SDL_PushEvent(&event);
+    return(interval);
+    */
+
+    printf ( "Fuss köcsög\n" );
+    return interval;
+}
+
+
 void init();
 void destroy();
 
@@ -154,11 +181,14 @@ int main ( int argc, char* args[] ){
 		SDL_RenderFillRect ( render, &player);
 		//SDL_SetRenderDrawColor ( render, 0, 0, 0, 0 );
 		//SDL_RenderPresent ( render );
+
+		SDL_TimerCallback timer_callback;
+		SDL_TimerID timer_id = SDL_AddTimer ( 1000, timer_callback, NULL );
 	 	
 	 	//Main loop! :)
 		while ( quit ) {
 			SDL_RenderClear ( render );
-			if ( SDL_PollEvent ( &event ) != 0 ) {
+			if ( SDL_WaitEvent ( &event ) != 0 ) {
 				if ( event.type == SDL_QUIT ) { 
 					quit = false;
 					exit ( EXIT_FAILURE );
@@ -207,7 +237,7 @@ int main ( int argc, char* args[] ){
 
 			}
 			else{
-				SDL_Delay (50);
+				SDL_Delay (1000);
 			}
 		}
 	}
