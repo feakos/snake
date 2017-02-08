@@ -29,8 +29,10 @@
 #include <SDL2/SDL_ttf.h> //Optional SDL library used to display text using renderers
 
 //Azért uint32_t, mert ez biztos 32 bites!
-const uint32_t WINDOW_WIDTH = 800;
-const uint32_t WINDOW_HEIGTH = 800;
+#define WINDOW_WIDTH 800
+#define WINDOW_HEIGTH 800
+
+#define SPEED 5
 
 //Directions
 typedef enum { 
@@ -41,8 +43,6 @@ typedef enum {
 	DIR_DOWN = 2,
 	DIR_RIGHT = 3,
  } direction;
-
- #define SPEED 5
 
 static direction get_dir_from_key ( SDL_Scancode scancode ) {
 	direction result = DIR_STOP;
@@ -165,8 +165,24 @@ void step_player ( SDL_Rect *player, direction dir ) {
 		default:
 			break;
 	}
+
+	if ( player->y < 0 ) {
+        player->y = WINDOW_HEIGTH - player->h;
+    }
+    player->y %= WINDOW_HEIGTH;
+
+	if ( player->x < 0 ) {
+        player->x = WINDOW_WIDTH - player->w;
+    }
+    player->x %= WINDOW_WIDTH;
+
 }
 
+void move_player ( SDL_Renderer *renderer, SDL_Rect *player, direction dir ) {
+	clear_player ( renderer, player );
+	step_player ( player, dir );
+	draw_player ( renderer, player );
+}
 
 void render_score ();
 void create_map ();
@@ -179,7 +195,7 @@ int main ( int argc, char* args[] ){
  	SDL_Window *window = NULL;
 
 	//Render
-	SDL_Renderer *render = NULL;
+	SDL_Renderer *renderer = NULL;
 
 	//SDL key event
 	SDL_Event event;
@@ -209,16 +225,16 @@ int main ( int argc, char* args[] ){
 	}
 
  	//SDL renderer létrehozása
- 	render = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
+ 	renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
 
-	SDL_SetRenderDrawColor ( render, 255, 255, 255, 255 );
-	SDL_RenderClear ( render );
-	draw_player ( render, &player );
-	clear_player ( render, &player );
+	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
+	SDL_RenderClear ( renderer );
+	draw_player ( renderer, &player );
+	clear_player ( renderer, &player );
 	step_player ( &player, DIR_DOWN );
 
-	draw_player ( render, &player );	
-	SDL_RenderPresent ( render );
+	draw_player ( renderer, &player );	
+	SDL_RenderPresent ( renderer );
 
 	//Timer
 	SDL_TimerID timer_id = SDL_AddTimer ( 1000, timer_callback, NULL );
@@ -266,15 +282,16 @@ int main ( int argc, char* args[] ){
 					default:
 						break;
 				}
+				move_player ( renderer, &player, dir );
 			}
-			SDL_RenderPresent ( render );
+			SDL_RenderPresent ( renderer );
 		}
 		else{
 			SDL_Delay (1000);
 		}
 	}
 
-	SDL_DestroyRenderer ( render );
+	SDL_DestroyRenderer ( renderer );
 	SDL_DestroyWindow ( window );
 	SDL_RemoveTimer ( timer_id );
 	SDL_Quit ();
