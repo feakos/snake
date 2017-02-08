@@ -33,7 +33,7 @@
 #define WINDOW_HEIGTH 400
 #define SCALE 20
 
-#define SPEED 5
+static uint32_t timer_limit = 0;
 
 //Directions
 typedef enum { 
@@ -44,6 +44,40 @@ typedef enum {
 	DIR_DOWN = 2,
 	DIR_RIGHT = 3,
  } direction;
+
+uint32_t max_length = 100;
+
+typedef struct {
+	direction dir;
+//	SDL_Rect snake[max_length];
+} player;
+
+/*
+
+bool CreateWindow ( ) {
+	SDL_Window *window = SDL_CreateWindow ( "SNAKE beta 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
+
+	if ( window == NULL ) {
+	 	fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
+		return false;
+	}
+
+	return true;
+}
+
+bool CreateRenderer ( SDL_Window *window ) {
+	SDL_Renderer *renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
+
+	if ( renderer == NULL ) {
+	 	fprintf ( stderr, "A renderer-t nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
+		return false;
+	}
+
+	return true;
+}
+
+*/
 
 static direction get_dir_from_key ( SDL_Scancode scancode ) {
 	direction result = DIR_STOP;
@@ -77,57 +111,36 @@ static direction get_dir_from_key ( SDL_Scancode scancode ) {
 }
 
 Uint32 timer_callback ( Uint32 ms, void *param ) {
-    SDL_Event event;
-    SDL_UserEvent userevent;
+ 
+	SDL_Event event;
+	SDL_UserEvent userevent;
 
-    //Stacken jön létre. Azokkal az értékekkel jön létre, ami a stack-en volt, ezért ki kellett nullázni!
-    memset ( &event, 0, sizeof ( event ) );
-    memset ( &userevent, 0, sizeof ( userevent ) );
+	static uint32_t timer_cnt = 0;
 
-    userevent.type = SDL_USEREVENT;
-    userevent.code = 0;
-    userevent.data1 = NULL;
-    userevent.data2 = NULL;
-
-    event.type = SDL_USEREVENT;
-    event.user = userevent;
-
-    SDL_PushEvent ( &event );
-    //printf ( "Fuss köcsög\n" );
-
-    return ( ms );
-}
-
-void init();
-void destroy();
-
-/*
-
-bool CreateWindow ( ) {
-	SDL_Window *window = SDL_CreateWindow ( "SNAKE beta 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
-
-	if ( window == NULL ) {
-	 	fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
-		return false;
+	timer_cnt++;
+	if ( timer_cnt < timer_limit ) {
+		return ms;
 	}
+	timer_cnt = 0;
 
-	return true;
+	//Stacken jön létre. Azokkal az értékekkel jön létre, ami a stack-en volt, ezért ki kellett nullázni!
+	memset ( &event, 0, sizeof ( event ) );
+	memset ( &userevent, 0, sizeof ( userevent ) );
+
+	userevent.type = SDL_USEREVENT;
+	userevent.code = 0;
+	userevent.data1 = NULL;
+	userevent.data2 = NULL;
+
+	event.type = SDL_USEREVENT;
+	event.user = userevent;
+
+	SDL_PushEvent ( &event );
+
+	return ( ms );
 }
 
-bool CreateRenderer ( SDL_Window *window ) {
-	SDL_Renderer *renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
-
-	if ( renderer == NULL ) {
-	 	fprintf ( stderr, "A renderer-t nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
-		return false;
-	}
-
-	return true;
-}
-
-*/
-
+//Player törlése, háttér kirajzolása, nem kell a függvény lassan.
 void clear_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
 
 	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
@@ -135,6 +148,7 @@ void clear_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
 
 }
 
+//Player kirajzolása
 void draw_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
 
 	SDL_SetRenderDrawColor ( renderer, 0, 0, 0, 255 );
@@ -142,7 +156,9 @@ void draw_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
 
 }
 
+//Player léptetése 1-et fel, balra, ...
 void step_player ( SDL_Rect *player, direction dir ) {
+	
 	switch ( dir ) {
 		case DIR_UP:
 			player->y -= player->h;
@@ -164,11 +180,13 @@ void step_player ( SDL_Rect *player, direction dir ) {
 			break;
 	}
 
+	//Itt ha felfele kimegy a képernyőről, akkor alul bejön az y tengelyen.
 	if ( player->y < 0 ) {
         player->y = WINDOW_HEIGTH - player->h;
     }
-    player->y %= WINDOW_HEIGTH;
+    player->y %= WINDOW_HEIGTH; //Ez meg a maradék, tehát ha alul kimegy, felül bejön...
 
+	//Ha a játékos balra kimegy a képernyőről, jobbra bejön és! ha jobbra kimegy, balra bejön...
 	if ( player->x < 0 ) {
         player->x = WINDOW_WIDTH - player->w;
     }
@@ -176,15 +194,14 @@ void step_player ( SDL_Rect *player, direction dir ) {
 
 }
 
+//A player mozgatása
 void move_player ( SDL_Renderer *renderer, SDL_Rect *player, direction dir ) {
+
 	clear_player ( renderer, player );
 	step_player ( player, dir );
 	draw_player ( renderer, player );
-}
 
-void render_score ();
-void create_map ();
-bool check_colloison ();
+}
 
 int main ( int argc, char* args[] ){
 	bool quit = false;
@@ -230,7 +247,7 @@ int main ( int argc, char* args[] ){
 	SDL_RenderPresent ( renderer );
 
 	//Timer
-	SDL_TimerID timer_id = SDL_AddTimer ( 100, timer_callback, NULL );
+	SDL_TimerID timer_id = SDL_AddTimer ( 10, timer_callback, NULL );
 
  	//Main loop! :)
 	while ( !quit ) {
@@ -244,12 +261,22 @@ int main ( int argc, char* args[] ){
 			}			
 
 			if ( event.type == SDL_KEYDOWN ) {
-				//A q billentyű hatására kilép, ideiglenes megoldás.
-				if ( event.key.keysym.sym == SDLK_q ) {
-					printf ( "Quit!\n" );
-					quit = true;
+
+				//Kilépés, speedUP, ...				
+				switch ( event.key.keysym.sym ){
+					case SDLK_q:
+						quit = true;
+						break;
+					case SDLK_m:
+						if ( timer_limit > 1 ) timer_limit--;
+						break;
+
+					case SDLK_n:
+						if ( timer_limit < 20 ) timer_limit++;
+						break;
 				}
 
+				//Irányítás
 				direction new_dir = get_dir_from_key ( event.key.keysym.scancode );
 				switch ( new_dir ) {
 					case DIR_UP:
@@ -286,7 +313,7 @@ int main ( int argc, char* args[] ){
 			SDL_RenderPresent ( renderer );
 		}
 		else{
-			SDL_Delay (1000);
+			SDL_Delay ( 1000 );
 		}
 	}
 
