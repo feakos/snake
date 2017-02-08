@@ -29,8 +29,8 @@
 #include <SDL2/SDL_ttf.h> //Optional SDL library used to display text using renderers
 
 //Azért uint32_t, mert ez biztos 32 bites!
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGTH 800
+#define WINDOW_WIDTH 400
+#define WINDOW_HEIGTH 400
 
 #define SPEED 5
 
@@ -79,22 +79,20 @@ Uint32 timer_callback ( Uint32 ms, void *param ) {
     SDL_Event event;
     SDL_UserEvent userevent;
 
-    /* In this example, our callback pushes an SDL_USEREVENT event
-    into the queue, and causes our callback to be called again at the
-    same interval: 
-    */
+    //Stacken jön létre. Azokkal az értékekkel jön létre, ami a stack-en volt, ezért ki kellett nullázni!
+    memset ( &event, 0, sizeof ( event ) );
+    memset ( &userevent, 0, sizeof ( userevent ) );
 
- 	// Ez nem tuti, hogy jó    event.type = SDL_USEREVENT;
     userevent.type = SDL_USEREVENT;
-    //userevent.code = 0;
-    //userevent.data1 = NULL;
-    //userevent.data2 = NULL;
+    userevent.code = 0;
+    userevent.data1 = NULL;
+    userevent.data2 = NULL;
 
     event.type = SDL_USEREVENT;
     event.user = userevent;
 
     SDL_PushEvent ( &event );
-    printf ( "Fuss köcsög\n" );
+    //printf ( "Fuss köcsög\n" );
 
     return ( ms );
 }
@@ -230,27 +228,27 @@ int main ( int argc, char* args[] ){
 	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 	SDL_RenderClear ( renderer );
 	draw_player ( renderer, &player );
-	clear_player ( renderer, &player );
-	step_player ( &player, DIR_DOWN );
-
-	draw_player ( renderer, &player );	
 	SDL_RenderPresent ( renderer );
 
 	//Timer
-	SDL_TimerID timer_id = SDL_AddTimer ( 1000, timer_callback, NULL );
+	SDL_TimerID timer_id = SDL_AddTimer ( 50, timer_callback, NULL );
 
  	//Main loop! :)
 	while ( !quit ) {
 		if ( SDL_WaitEvent ( &event ) != 0 ) {
 			if ( event.type == SDL_QUIT ) { 
 				quit = true;
-				exit ( EXIT_FAILURE );
 			}			
+			
+			if ( event.type == SDL_USEREVENT ) { 
+				move_player ( renderer, &player, dir );
+			}			
+
 			if ( event.type == SDL_KEYDOWN ) {
 				//A q billentyű hatására kilép, ideiglenes megoldás.
 				if ( event.key.keysym.sym == SDLK_q ) {
 					printf ( "Quit!\n" );
-					exit ( EXIT_FAILURE );
+					quit = true;
 				}
 
 				direction new_dir = get_dir_from_key ( event.key.keysym.scancode );
@@ -282,7 +280,7 @@ int main ( int argc, char* args[] ){
 					default:
 						break;
 				}
-				move_player ( renderer, &player, dir );
+				//move_player ( renderer, &player, dir );
 			}
 			SDL_RenderPresent ( renderer );
 		}
