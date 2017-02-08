@@ -28,6 +28,7 @@
 #include <SDL2/SDL.h> //Main SDL library
 #include <SDL2/SDL_ttf.h> //Optional SDL library used to display text using renderers
 
+//Azért uint32_t, mert ez biztos 32 bites!
 const uint32_t WINDOW_WIDTH = 800;
 const uint32_t WINDOW_HEIGTH = 800;
 
@@ -41,6 +42,8 @@ typedef enum {
 	DIR_RIGHT = 3,
  } direction;
 
+ #define SPEED 5
+
 static direction get_dir_from_key ( SDL_Scancode scancode ) {
 	direction result = DIR_STOP;
 
@@ -49,18 +52,22 @@ static direction get_dir_from_key ( SDL_Scancode scancode ) {
 		case SDL_SCANCODE_W:
 			result = DIR_UP;
 			break;
+
 		case SDL_SCANCODE_LEFT:
 		case SDL_SCANCODE_A:
 			result = DIR_LEFT;
 			break;
+
 		case SDL_SCANCODE_DOWN:
 		case SDL_SCANCODE_S:
 			result = DIR_DOWN;
 			break;
+
 		case SDL_SCANCODE_RIGHT:
 		case SDL_SCANCODE_D:
 			result = DIR_RIGHT;
 			break;
+
 		default:
 			result = DIR_NOCHANGE;
 			break;
@@ -68,35 +75,35 @@ static direction get_dir_from_key ( SDL_Scancode scancode ) {
 	return result;
 }
 
-Uint32 timer_callback ( Uint32 interval, void *param ) {
-
-/*
+Uint32 timer_callback ( Uint32 ms, void *param ) {
     SDL_Event event;
     SDL_UserEvent userevent;
 
-     In this example, our callback pushes an SDL_USEREVENT event
+    /* In this example, our callback pushes an SDL_USEREVENT event
     into the queue, and causes our callback to be called again at the
     same interval: 
+    */
 
+ 	// Ez nem tuti, hogy jó    event.type = SDL_USEREVENT;
     userevent.type = SDL_USEREVENT;
-    userevent.code = 0;
-    userevent.data1 = NULL;
-    userevent.data2 = NULL;
+    //userevent.code = 0;
+    //userevent.data1 = NULL;
+    //userevent.data2 = NULL;
 
     event.type = SDL_USEREVENT;
     event.user = userevent;
 
-    SDL_PushEvent(&event);
-    return(interval);
-    */
-
+    SDL_PushEvent ( &event );
     printf ( "Fuss köcsög\n" );
-    return interval;
+
+    return ( ms );
 }
 
 
 void init();
 void destroy();
+
+/*
 
 bool CreateWindow ( ) {
 	SDL_Window *window = SDL_CreateWindow ( "SNAKE beta 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
@@ -121,7 +128,9 @@ bool CreateRenderer ( SDL_Window *window ) {
 	return true;
 }
 
-void renderPlayer ( SDL_Renderer *renderer, SDL_Rect player, int x, int y, int scale ) {
+*/
+
+void renderPlayer ( SDL_Renderer *renderer, SDL_Rect player, uint32_t x, uint32_t y, uint32_t scale ) {
 	player.w = scale;
 	player.h = scale;
 
@@ -138,7 +147,7 @@ void createMap ();
 bool checkColloison ();
 
 int main ( int argc, char* args[] ){
-	bool quit = true;
+	bool quit = false;
 
 	//Window
  	SDL_Window *window = NULL;
@@ -157,93 +166,92 @@ int main ( int argc, char* args[] ){
 	SDL_Rect player = { 0, 0, scale, scale };
 
 	//SDL inicializálása
-	if( SDL_Init ( SDL_INIT_VIDEO ) < 0 ){
+	if( SDL_Init ( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 ){
 		fprintf ( stderr, "SDL-t nem sikerült inicializálni! SDL_Error: %s\n", SDL_GetError() );
+		exit ( EXIT_FAILURE );
 	}
-	else{
-		//SDL window és renderer egyszerre
-		//SDL_CreateWindowAndRenderer ( );
+	//SDL window és renderer egyszerre
+	//SDL_CreateWindowAndRenderer ( );
 
-		//SDL ablak létrehozása
-		window = SDL_CreateWindow ( "Hello SDL2", 
-			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
-	 	if ( window == NULL ) {
-	 		fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
-	 		exit (1);
-	 	}
+	//SDL ablak létrehozása
+	window = SDL_CreateWindow ( "SNAKE 1.0b", 
+		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
+		WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
+	if ( window == NULL ) {
+		fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
+		exit (1);
+	}
 
-	 	//SDL renderer létrehozása
-	 	render = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
+ 	//SDL renderer létrehozása
+ 	render = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
 
-		//SDL_RenderClear ( render );
-		SDL_SetRenderDrawColor ( render, 255, 255, 255, 255 );
-		SDL_RenderFillRect ( render, &player);
-		//SDL_SetRenderDrawColor ( render, 0, 0, 0, 0 );
-		//SDL_RenderPresent ( render );
+	SDL_SetRenderDrawColor ( render, 255, 255, 255, 0 );
+	SDL_RenderFillRect ( render, &player);
 
-		SDL_TimerCallback timer_callback;
-		SDL_TimerID timer_id = SDL_AddTimer ( 1000, timer_callback, NULL );
-	 	
-	 	//Main loop! :)
-		while ( quit ) {
-			SDL_RenderClear ( render );
-			if ( SDL_WaitEvent ( &event ) != 0 ) {
-				if ( event.type == SDL_QUIT ) { 
-					quit = false;
+	//Timer
+	SDL_TimerID timer_id = SDL_AddTimer ( 1000, timer_callback, NULL );
+
+ 	//Main loop! :)
+	while ( !quit ) {
+		if ( SDL_WaitEvent ( &event ) != 0 ) {
+			if ( event.type == SDL_QUIT ) { 
+				quit = true;
+				exit ( EXIT_FAILURE );
+			}			
+			if ( event.type == SDL_KEYDOWN ) {
+				//A q billentyű hatására kilép, ideiglenes megoldás.
+				if ( event.key.keysym.sym == SDLK_q ) {
+					printf ( "Quit!\n" );
 					exit ( EXIT_FAILURE );
 				}
-				if (event.type == SDL_KEYDOWN) {
-					//A q billentyű hatására kilép, ideiglenes megoldás.
-					if( event.key.keysym.sym == SDLK_q ) {
-						printf ( "Quit!\n" );
-						exit ( EXIT_FAILURE );
-					}
 
-					direction new_dir = get_dir_from_key ( event.key.keysym.scancode );
-					switch ( new_dir ) {
-						case DIR_UP:
-							if ( dir != DIR_DOWN ) {
-								dir = new_dir;
-								player.y -= 10; 
-							}
-							break;
-						case DIR_LEFT:
-							if ( dir != DIR_RIGHT ){ 
-								dir = new_dir;
-								player.x -= 10; 
-							}
-							break;
-						case DIR_DOWN:
-							if ( dir != DIR_UP ) {
-								dir = new_dir;
-								player.y += 10; 
-							}
-							break;
-						case DIR_RIGHT:
-							if ( dir != DIR_LEFT ) {
-								dir = new_dir;
-								player.x += 10; 
-							}
-							break;
-						default:
-							break;
-					}
+				direction new_dir = get_dir_from_key ( event.key.keysym.scancode );
+				switch ( new_dir ) {
+					case DIR_UP:
+						if ( dir != DIR_DOWN ) {
+							dir = new_dir;
+							player.y -= SPEED;
+						}
+						break;
+						
+					case DIR_LEFT:
+						if ( dir != DIR_RIGHT ) {
+							dir = new_dir;
+							player.x -= SPEED;
+						}
+						break;
+						
+					case DIR_DOWN:
+						if ( dir != DIR_UP ) {
+							dir = new_dir;
+							player.y += SPEED;
+						}
+						break;
+					
+					case DIR_RIGHT:
+						if ( dir != DIR_LEFT ) {
+							dir = new_dir;
+							player.x += SPEED;
+						}
+						break;
+						
+					default:
+						break;
 				}
-				
-				renderPlayer ( render, player, player.x, player.y, scale );
-				SDL_SetRenderDrawColor ( render, 255, 255, 255, 255 );
-				SDL_RenderPresent ( render );
-
 			}
-			else{
-				SDL_Delay (1000);
-			}
+			renderPlayer ( render, player, player.x, player.y, scale );
+			SDL_SetRenderDrawColor ( render, 255, 255, 255, 0 );
+			SDL_RenderPresent ( render );
+			SDL_RenderClear ( render );
+		}
+		else{
+			SDL_Delay (1000);
 		}
 	}
 
-    SDL_DestroyRenderer ( render );
+	SDL_DestroyRenderer ( render );
 	SDL_DestroyWindow ( window );
+	SDL_RemoveTimer ( timer_id );
 	SDL_Quit ();
 
 	return 0;
