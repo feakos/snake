@@ -215,7 +215,8 @@ int main ( int argc, char* args[] ){
 	SDL_RenderClear ( render );
 	draw_player ( render, &player );
 	clear_player ( render, &player );
-	player.x += scale;
+	step_player ( &player, DIR_DOWN );
+
 	draw_player ( render, &player );	
 	SDL_RenderPresent ( render );
 
@@ -241,28 +242,24 @@ int main ( int argc, char* args[] ){
 					case DIR_UP:
 						if ( dir != DIR_DOWN ) {
 							dir = new_dir;
-							step_player ( &player, DIR_UP );
 						}
 						break;
 						
 					case DIR_LEFT:
 						if ( dir != DIR_RIGHT ) {
 							dir = new_dir;
-							step_player ( &player, DIR_UP );
 						}
 						break;
 						
 					case DIR_DOWN:
 						if ( dir != DIR_UP ) {
 							dir = new_dir;
-							step_player ( &player, DIR_UP );
 						}
 						break;
 					
 					case DIR_RIGHT:
 						if ( dir != DIR_LEFT ) {
 							dir = new_dir;
-							step_player ( &player, DIR_UP );
 						}
 						break;
 						
