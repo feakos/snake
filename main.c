@@ -130,21 +130,47 @@ bool CreateRenderer ( SDL_Window *window ) {
 
 */
 
-void renderPlayer ( SDL_Renderer *renderer, SDL_Rect player, uint32_t x, uint32_t y, uint32_t scale ) {
-	player.w = scale;
-	player.h = scale;
+void clear_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
 
-	SDL_SetRenderDrawColor ( renderer, 0, 0, 0, 0 );
+	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
+	SDL_RenderFillRect ( renderer, player );
 
-	player.x = x;
-	player.y = y;
-
-	SDL_RenderFillRect ( renderer, &player );
 }
 
-void renderScore ();
-void createMap ();
-bool checkColloison ();
+void draw_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
+
+	SDL_SetRenderDrawColor ( renderer, 0, 0, 0, 255 );
+	SDL_RenderFillRect ( renderer, player );
+
+}
+
+void step_player ( SDL_Rect *player, direction dir ) {
+	switch ( dir ) {
+		case DIR_UP:
+			player->y -= player->h;
+			break;
+						
+		case DIR_LEFT:
+			player->x -= player->w;
+			break;
+			
+		case DIR_DOWN:
+			player->y += player->h;
+			break;
+				
+		case DIR_RIGHT:
+			player->x += player->w;
+			break;
+						
+		default:
+			break;
+	}
+}
+
+
+void render_score ();
+void create_map ();
+bool check_colloison ();
 
 int main ( int argc, char* args[] ){
 	bool quit = false;
@@ -162,7 +188,7 @@ int main ( int argc, char* args[] ){
 	direction dir = DIR_STOP;
 
 	//Player
-	int scale = 20;
+	uint32_t scale = 20;
 	SDL_Rect player = { 0, 0, scale, scale };
 
 	//SDL inicializálása
@@ -185,8 +211,13 @@ int main ( int argc, char* args[] ){
  	//SDL renderer létrehozása
  	render = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
 
-	SDL_SetRenderDrawColor ( render, 255, 255, 255, 0 );
-	SDL_RenderFillRect ( render, &player);
+	SDL_SetRenderDrawColor ( render, 255, 255, 255, 255 );
+	SDL_RenderClear ( render );
+	draw_player ( render, &player );
+	clear_player ( render, &player );
+	player.x += scale;
+	draw_player ( render, &player );	
+	SDL_RenderPresent ( render );
 
 	//Timer
 	SDL_TimerID timer_id = SDL_AddTimer ( 1000, timer_callback, NULL );
@@ -210,28 +241,28 @@ int main ( int argc, char* args[] ){
 					case DIR_UP:
 						if ( dir != DIR_DOWN ) {
 							dir = new_dir;
-							player.y -= SPEED;
+							step_player ( &player, DIR_UP );
 						}
 						break;
 						
 					case DIR_LEFT:
 						if ( dir != DIR_RIGHT ) {
 							dir = new_dir;
-							player.x -= SPEED;
+							step_player ( &player, DIR_UP );
 						}
 						break;
 						
 					case DIR_DOWN:
 						if ( dir != DIR_UP ) {
 							dir = new_dir;
-							player.y += SPEED;
+							step_player ( &player, DIR_UP );
 						}
 						break;
 					
 					case DIR_RIGHT:
 						if ( dir != DIR_LEFT ) {
 							dir = new_dir;
-							player.x += SPEED;
+							step_player ( &player, DIR_UP );
 						}
 						break;
 						
@@ -239,10 +270,7 @@ int main ( int argc, char* args[] ){
 						break;
 				}
 			}
-			renderPlayer ( render, player, player.x, player.y, scale );
-			SDL_SetRenderDrawColor ( render, 255, 255, 255, 0 );
 			SDL_RenderPresent ( render );
-			SDL_RenderClear ( render );
 		}
 		else{
 			SDL_Delay (1000);
