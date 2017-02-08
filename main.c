@@ -31,6 +31,7 @@
 //Azért uint32_t, mert ez biztos 32 bites!
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGTH 400
+#define SCALE 20
 
 #define SPEED 5
 
@@ -96,7 +97,6 @@ Uint32 timer_callback ( Uint32 ms, void *param ) {
 
     return ( ms );
 }
-
 
 void init();
 void destroy();
@@ -202,8 +202,7 @@ int main ( int argc, char* args[] ){
 	direction dir = DIR_STOP;
 
 	//Player
-	uint32_t scale = 20;
-	SDL_Rect player = { 0, 0, scale, scale };
+	SDL_Rect player = { 0, 0, SCALE, SCALE };
 
 	//SDL inicializálása
 	if( SDL_Init ( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 ){
@@ -231,7 +230,7 @@ int main ( int argc, char* args[] ){
 	SDL_RenderPresent ( renderer );
 
 	//Timer
-	SDL_TimerID timer_id = SDL_AddTimer ( 50, timer_callback, NULL );
+	SDL_TimerID timer_id = SDL_AddTimer ( 100, timer_callback, NULL );
 
  	//Main loop! :)
 	while ( !quit ) {
@@ -241,7 +240,7 @@ int main ( int argc, char* args[] ){
 			}			
 			
 			if ( event.type == SDL_USEREVENT ) { 
-				move_player ( renderer, &player, dir );
+				step_player ( &player, dir );
 			}			
 
 			if ( event.type == SDL_KEYDOWN ) {
@@ -280,8 +279,10 @@ int main ( int argc, char* args[] ){
 					default:
 						break;
 				}
-				//move_player ( renderer, &player, dir );
 			}
+			SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
+			SDL_RenderClear ( renderer );
+			draw_player ( renderer, &player );
 			SDL_RenderPresent ( renderer );
 		}
 		else{
