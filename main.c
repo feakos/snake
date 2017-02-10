@@ -31,7 +31,7 @@
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGTH 400
 #define SCALE 20
-#define MAX_LENGTH 100
+#define MAX_SNAKE_LENGTH 100
 
 //Azért uint32_t, mert ez biztos 32 bites!
 static uint32_t timer_limit = 10;
@@ -44,16 +44,25 @@ typedef enum {
 	DIR_LEFT = 1,
 	DIR_DOWN = 2,
 	DIR_RIGHT = 3,
- } direction;
+ } direction_t;
 
 typedef struct {
-	uint32_t length;
-	direction dir;
-	SDL_Rect snake[MAX_LENGTH];
-} player;
+	direction_t dir;
+	SDL_Rect snake[MAX_SNAKE_LENGTH];
+	uint32_t snake_length;
+} player_t;
 
-/*
+static player_t player = { 
+		.dir = DIR_RIGHT, 
+		.snake_length = 3,
+		.snake = { 
+			{ .x = 3 * SCALE, .y = 0, .h = SCALE, .w = SCALE }, 
+			{ .x = 2 * SCALE, .y = 0, .h = SCALE, .w = SCALE }, 
+			{ .x = SCALE, .y = 0, .h = SCALE, .w = SCALE }
+		}
+};
 
+#if 0
 bool CreateWindow ( ) {
 	SDL_Window *window = SDL_CreateWindow ( "SNAKE beta 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
 			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
@@ -76,11 +85,10 @@ bool CreateRenderer ( SDL_Window *window ) {
 
 	return true;
 }
+#endif
 
-*/
-
-static direction get_dir_from_key ( SDL_Scancode scancode ) {
-	direction result = DIR_STOP;
+static direction_t get_dir_from_key ( SDL_Scancode scancode ) {
+	direction_t result = DIR_STOP;
 
 	switch ( scancode ){
 		case SDL_SCANCODE_UP:
@@ -140,24 +148,31 @@ Uint32 timer_callback ( Uint32 ms, void *param ) {
 	return ( ms );
 }
 
+#if 0
 //Player törlése, háttér kirajzolása, nem kell a függvény lassan.
+
 void clear_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
 
 	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 	SDL_RenderFillRect ( renderer, player );
 
 }
+#endif
 
 //Player kirajzolása
-void draw_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
+void draw_player ( SDL_Renderer *renderer, const player_t *player ) {
+	int index;
 
 	SDL_SetRenderDrawColor ( renderer, 0, 0, 0, 255 );
-	SDL_RenderFillRect ( renderer, player );
+
+	for ( index = 0; index < player->snake_length; index++ ) {
+		SDL_RenderFillRect ( renderer, &player->snake[index] );
+	}
 
 }
 
 //Player léptetése 1-et fel, balra, ...
-void step_player ( SDL_Rect *player, direction dir ) {
+void step_player ( SDL_Rect *player, direction_t dir ) {
 	
 	switch ( dir ) {
 		case DIR_UP:
@@ -194,14 +209,16 @@ void step_player ( SDL_Rect *player, direction dir ) {
 
 }
 
+#if 0
 //A player mozgatása
-void move_player ( SDL_Renderer *renderer, SDL_Rect *player, direction dir ) {
+void move_player ( SDL_Renderer *renderer, SDL_Rect *player, direction_t dir ) {
 
 	clear_player ( renderer, player );
 	step_player ( player, dir );
 	draw_player ( renderer, player );
 
 }
+#endif
 
 int main ( int argc, char* args[] ){
 	bool quit = false;
@@ -216,10 +233,10 @@ int main ( int argc, char* args[] ){
 	SDL_Event event;
 
 	//Direction default values
-	direction dir = DIR_STOP;
+	direction_t dir = DIR_STOP;
 
 	//Player
-	SDL_Rect player = { 0, 0, SCALE, SCALE };
+	//SDL_Rect player = { 0, 0, SCALE, SCALE };
 
 	//SDL inicializálása
 	if( SDL_Init ( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 ){
@@ -243,7 +260,7 @@ int main ( int argc, char* args[] ){
 
 	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 	SDL_RenderClear ( renderer );
-	draw_player ( renderer, &player );
+	//draw_player ( renderer, &player );
 	SDL_RenderPresent ( renderer );
 
 	//Timer
@@ -257,7 +274,7 @@ int main ( int argc, char* args[] ){
 			}			
 			
 			if ( event.type == SDL_USEREVENT ) { 
-				step_player ( &player, dir );
+				//step_player ( &player, dir );
 			}			
 
 			if ( event.type == SDL_KEYDOWN ) {
@@ -277,7 +294,7 @@ int main ( int argc, char* args[] ){
 				}
 
 				//Irányítás
-				direction new_dir = get_dir_from_key ( event.key.keysym.scancode );
+				direction_t new_dir = get_dir_from_key ( event.key.keysym.scancode );
 				switch ( new_dir ) {
 					case DIR_UP:
 						if ( dir != DIR_DOWN ) {
@@ -309,7 +326,7 @@ int main ( int argc, char* args[] ){
 			}
 			SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 			SDL_RenderClear ( renderer );
-			draw_player ( renderer, &player );
+			//draw_player ( renderer, &player );
 			SDL_RenderPresent ( renderer );
 		}
 		else{
