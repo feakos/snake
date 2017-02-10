@@ -62,6 +62,18 @@ static player_t player = {
 		}
 };
 
+typedef struct {
+	SDL_Rect *food;
+	bool active;
+	uint32_t food_number;
+} food_t;
+
+/*
+Ha megvan az, hogy hány elemű a pálya, akkor lemodulózod % azt az értéket, amit kaptál a rand-tól.
+
+time.h
+*/
+
 #if 0
 bool CreateWindow ( ) {
 	SDL_Window *window = SDL_CreateWindow ( "SNAKE beta 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
@@ -91,6 +103,10 @@ static direction_t get_dir_from_key ( SDL_Scancode scancode ) {
 	direction_t result = DIR_STOP;
 
 	switch ( scancode ){
+		case SDL_SCANCODE_SPACE:
+			result = DIR_STOP;
+			break;
+
 		case SDL_SCANCODE_UP:
 		case SDL_SCANCODE_W:
 			result = DIR_UP;
@@ -186,6 +202,10 @@ static void step_player ( player_t *player ) {
 
 	//A kígyó feje lép egyet (először rálép a fejére a teste. :D )
 	SDL_Rect *snake_head = &player->snake[0];
+
+	if(DIR_STOP == player->dir) {
+    	return;
+  	}
 
 	switch ( player->dir ) {
 		case DIR_UP:
@@ -310,6 +330,10 @@ int main ( int argc, char* args[] ){
 				direction_t new_dir = get_dir_from_key ( event.key.keysym.scancode );
 				dir = player.dir;
 				switch ( new_dir ) {
+					case DIR_STOP:
+						dir = new_dir;
+						break;
+
 					case DIR_UP:
 						if ( dir != DIR_DOWN ) {
 							dir = new_dir;
