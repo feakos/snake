@@ -260,7 +260,7 @@ int main ( int argc, char* args[] ){
 
 	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 	SDL_RenderClear ( renderer );
-	//draw_player ( renderer, &player );
+	draw_player ( renderer, &player );
 	SDL_RenderPresent ( renderer );
 
 	//Timer
@@ -326,7 +326,7 @@ int main ( int argc, char* args[] ){
 			}
 			SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 			SDL_RenderClear ( renderer );
-			//draw_player ( renderer, &player );
+			draw_player ( renderer, &player );
 			SDL_RenderPresent ( renderer );
 		}
 		else{
