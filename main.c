@@ -176,9 +176,11 @@ static void step_player ( player_t *player ) {
 	uint32_t index;
 
 	//A kígyó teste lép egyet
-	for ( index = player->snake_length - 1; index > 0; index-- ){
-		if ( player->snake_length == 0 )
+	if ( player->snake_length == 0 )
 			return;
+
+	for ( index = player->snake_length - 1; index > 0; index-- ){
+
 		player->snake[index] = player->snake[index - 1];
 	}
 
@@ -306,6 +308,7 @@ int main ( int argc, char* args[] ){
 
 				//Irányítás
 				direction_t new_dir = get_dir_from_key ( event.key.keysym.scancode );
+				dir = player.dir;
 				switch ( new_dir ) {
 					case DIR_UP:
 						if ( dir != DIR_DOWN ) {
@@ -334,6 +337,7 @@ int main ( int argc, char* args[] ){
 					default:
 						break;
 				}
+				player.dir = dir;
 			}
 			SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 			SDL_RenderClear ( renderer );
