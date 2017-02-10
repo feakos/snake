@@ -28,12 +28,13 @@
 #include <SDL2/SDL.h> //Main SDL library
 #include <SDL2/SDL_ttf.h> //Optional SDL library used to display text using renderers
 
-//Azért uint32_t, mert ez biztos 32 bites!
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGTH 400
 #define SCALE 20
+#define MAX_LENGTH 100
 
-static uint32_t timer_limit = 0;
+//Azért uint32_t, mert ez biztos 32 bites!
+static uint32_t timer_limit = 10;
 
 //Directions
 typedef enum { 
@@ -45,11 +46,10 @@ typedef enum {
 	DIR_RIGHT = 3,
  } direction;
 
-uint32_t max_length = 100;
-
 typedef struct {
+	uint32_t length;
 	direction dir;
-//	SDL_Rect snake[max_length];
+	SDL_Rect snake[MAX_LENGTH];
 } player;
 
 /*
@@ -111,7 +111,7 @@ static direction get_dir_from_key ( SDL_Scancode scancode ) {
 }
 
 Uint32 timer_callback ( Uint32 ms, void *param ) {
- 
+
 	SDL_Event event;
 	SDL_UserEvent userevent;
 
