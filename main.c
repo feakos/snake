@@ -118,7 +118,7 @@ static direction_t get_dir_from_key ( SDL_Scancode scancode ) {
 	return result;
 }
 
-Uint32 timer_callback ( Uint32 ms, void *param ) {
+static Uint32 timer_callback ( Uint32 ms, void *param ) {
 
 	SDL_Event event;
 	SDL_UserEvent userevent;
@@ -160,8 +160,8 @@ void clear_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
 #endif
 
 //Player kirajzolása
-void draw_player ( SDL_Renderer *renderer, const player_t *player ) {
-	int index;
+static void draw_player ( SDL_Renderer *renderer, const player_t *player ) {
+	uint32_t index;
 
 	SDL_SetRenderDrawColor ( renderer, 0, 0, 0, 255 );
 
@@ -172,23 +172,34 @@ void draw_player ( SDL_Renderer *renderer, const player_t *player ) {
 }
 
 //Player léptetése 1-et fel, balra, ...
-void step_player ( SDL_Rect *player, direction_t dir ) {
-	
-	switch ( dir ) {
+static void step_player ( player_t *player ) {
+	uint32_t index;
+
+	//A kígyó teste lép egyet
+	for ( index = player->snake_length - 1; index > 0; index-- ){
+		if ( player->snake_length == 0 )
+			return;
+		player->snake[index] = player->snake[index - 1];
+	}
+
+	//A kígyó feje lép egyet (először rálép a fejére a teste. :D )
+	SDL_Rect *snake_head = &player->snake[0];
+
+	switch ( player->dir ) {
 		case DIR_UP:
-			player->y -= player->h;
+			snake_head->y -= snake_head->h;
 			break;
 						
 		case DIR_LEFT:
-			player->x -= player->w;
+			snake_head->x -= snake_head->w;
 			break;
 			
 		case DIR_DOWN:
-			player->y += player->h;
+			snake_head->y += snake_head->h;
 			break;
 				
 		case DIR_RIGHT:
-			player->x += player->w;
+			snake_head->x += snake_head->w;
 			break;
 						
 		default:
@@ -196,16 +207,16 @@ void step_player ( SDL_Rect *player, direction_t dir ) {
 	}
 
 	//Itt ha felfele kimegy a képernyőről, akkor alul bejön az y tengelyen.
-	if ( player->y < 0 ) {
-        player->y = WINDOW_HEIGTH - player->h;
+	if ( snake_head->y < 0 ) {
+        snake_head->y = WINDOW_HEIGTH - snake_head->h;
     }
-    player->y %= WINDOW_HEIGTH; //Ez meg a maradék, tehát ha alul kimegy, felül bejön...
+    snake_head->y %= WINDOW_HEIGTH; //Ez meg a maradék, tehát ha alul kimegy, felül bejön...
 
 	//Ha a játékos balra kimegy a képernyőről, jobbra bejön és! ha jobbra kimegy, balra bejön...
-	if ( player->x < 0 ) {
-        player->x = WINDOW_WIDTH - player->w;
+	if ( snake_head->x < 0 ) {
+        snake_head->x = WINDOW_WIDTH - snake_head->w;
     }
-    player->x %= WINDOW_WIDTH;
+    snake_head->x %= WINDOW_WIDTH;
 
 }
 
@@ -274,7 +285,7 @@ int main ( int argc, char* args[] ){
 			}			
 			
 			if ( event.type == SDL_USEREVENT ) { 
-				//step_player ( &player, dir );
+				step_player ( &player );
 			}			
 
 			if ( event.type == SDL_KEYDOWN ) {
