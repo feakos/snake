@@ -107,7 +107,7 @@ static void l_draw_player_f ( SDL_Renderer *p_sp_renderer, const l_s_player_t *p
 /*  */
 static void l_step_player_f ( l_s_player_t *p_sp_player );
 /*  */
-static void l_draw_food_f ( SDL_Renderer *p_sp_renderer, const l_s_food_t *food );
+static void l_draw_food_f ( SDL_Renderer *p_sp_renderer, const l_s_food_t *p_sp_food );
 /*  */
 static l_e_direction_t l_get_dir_from_key_f ( SDL_Scancode scancode );
 /*  */
@@ -254,10 +254,10 @@ static void l_step_player_f ( l_s_player_t *p_sp_player ) {
 
 }
 
-static void l_draw_food_f ( SDL_Renderer *p_sp_renderer, const l_s_food_t *food ) {
+static void l_draw_food_f ( SDL_Renderer *p_sp_renderer, const l_s_food_t *p_sp_food ) {
 
 	SDL_SetRenderDrawColor ( p_sp_renderer, 255, 0, 0, 255 );
-	SDL_RenderFillRect ( p_sp_renderer, &food->s_coord );
+	SDL_RenderFillRect ( p_sp_renderer, &p_sp_food->s_coord );
 
 }
 
