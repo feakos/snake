@@ -63,10 +63,19 @@ static player_t player = {
 };
 
 typedef struct {
-	SDL_Rect *food;
+	SDL_Rect food;
 	bool active;
 	uint32_t food_number;
 } food_t;
+
+
+static food_t food = { 
+		.active = true, 
+		.food_number = 1,
+		.food = { .x = SCALE * 10, .y = SCALE * 5, .h = SCALE, .w = SCALE }
+};
+
+
 
 /*
 Ha megvan az, hogy hány elemű a pálya, akkor lemodulózod % azt az értéket, amit kaptál a rand-tól.
@@ -242,6 +251,13 @@ static void step_player ( player_t *player ) {
 
 }
 
+static void draw_food ( SDL_Renderer *renderer, const food_t *food ) {
+
+	SDL_SetRenderDrawColor ( renderer, 0, 255, 0, 255 );
+	SDL_RenderFillRect ( renderer, &food->food );
+
+}
+
 #if 0
 //A player mozgatása
 void move_player ( SDL_Renderer *renderer, SDL_Rect *player, direction_t dir ) {
@@ -366,6 +382,7 @@ int main ( int argc, char* args[] ){
 			SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 			SDL_RenderClear ( renderer );
 			draw_player ( renderer, &player );
+			draw_food ( renderer, &food);
 			SDL_RenderPresent ( renderer );
 		}
 		else{
