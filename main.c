@@ -12,7 +12,7 @@
 	SDL_SetRenderDrawColor( render, 0, 0, 255, 255 );
 
 	// Render our "player"
-	SDL_RenderFillRect( render, &player );
+	SDL_RenderFillRect( render, &p_sp_player );
 
 	// Change color to green
 	SDL_SetRenderDrawColor( render, 0, 255, 0, 255 );
@@ -21,67 +21,109 @@
 	SDL_RenderPresent( render );
 */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stdbool.h>
-#include <SDL2/SDL.h> //Main SDL library
-#include <SDL2/SDL_ttf.h> //Optional SDL library used to display text using renderers
-
-#define WINDOW_WIDTH 400
-#define WINDOW_HEIGTH 400
-#define SCALE 20
-#define MAX_SNAKE_LENGTH 100
-
-//Azért uint32_t, mert ez biztos 32 bites!
-static uint32_t timer_limit = 10;
-
-//Directions
-typedef enum { 
-	DIR_NOCHANGE = -2,
-	DIR_STOP = -1,
-	DIR_UP = 0,
-	DIR_LEFT = 1,
-	DIR_DOWN = 2,
-	DIR_RIGHT = 3,
- } direction_t;
-
-typedef struct {
-	direction_t dir;
-	SDL_Rect snake[MAX_SNAKE_LENGTH];
-	uint32_t snake_length;
-} player_t;
-
-static player_t player = { 
-		.dir = DIR_RIGHT, 
-		.snake_length = 3,
-		.snake = { 
-			{ .x = 3 * SCALE, .y = 0, .h = SCALE, .w = SCALE }, 
-			{ .x = 2 * SCALE, .y = 0, .h = SCALE, .w = SCALE }, 
-			{ .x = SCALE, .y = 0, .h = SCALE, .w = SCALE }
-		}
-};
-
-typedef struct {
-	SDL_Rect coord;
-	bool active;
-	uint32_t food_number;
-} food_t;
-
-uint32_t random_place_x;
-uint32_t random_place_y;
-
-static food_t food;
-
 /*
 Ha megvan az, hogy hány elemű a pálya, akkor lemodulózod % azt az értéket, amit kaptál a rand-tól.
 
 time.h
 */
 
-static direction_t get_dir_from_key ( SDL_Scancode scancode ) {
-	direction_t result = DIR_STOP;
+void l_init_sdl_f ();
+/* Ebbe belerakom a createwindow, renderer, init-et, addtimert is */
+
+void l_draw_all_f ();
+/* 
+	SDL_SetRenderDrawColor ( p_sp_renderer, 255, 255, 255, 255 );
+	SDL_RenderClear ( p_sp_renderer );
+	draw_player ( p_sp_renderer, &p_sp_player );
+	SDL_RenderPresent ( p_sp_renderer );
+	SDL_SetRenderDrawColor ( p_sp_renderer, 255, 255, 255, 255 );
+	SDL_RenderClear ( p_sp_renderer );
+	draw_player ( p_sp_renderer, &p_sp_player );
+	l_draw_food_f ( p_sp_renderer, &food);
+	SDL_RenderPresent ( p_sp_renderer );
+*/
+
+/* food, player init egy függvényből legyen */
+
+
+/* ---------------------- INCLUDES ---------------------- */
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <time.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+
+/* ---------------------- DEFINE & TYPES ---------------------- */
+#define L_U32_WINDOW_WIDTH 400
+#define L_U32_WINDOW_HEIGTH 400
+#define L_U32_SCALE 20
+#define L_U32_MAX_SNAKE_LENGTH 100
+
+/* Directions */
+typedef enum { 
+	/*  */
+	DIR_NOCHANGE = -2,
+	/*  */
+	DIR_STOP = -1,
+	/*  */
+	DIR_UP = 0,
+	/*  */
+	DIR_LEFT = 1,
+	/*  */
+	DIR_DOWN = 2,
+	/*  */
+	DIR_RIGHT = 3,
+ } l_e_direction_t;
+
+/*  */
+typedef struct {
+	/*  */
+	l_e_direction_t dir;
+	/*  */
+	l_e_direction_t next_dir; //megnézem a lastot, hogy mi volt, aztán beírom a new-ba.
+	/*  */
+	l_e_direction_t last_dir; //a lastból olvasom, a next dir szerint lépek és beírom a lastba a nextet.
+	/*  */
+	SDL_Rect snake[L_U32_MAX_SNAKE_LENGTH];
+	/*  */
+	uint32_t u32_snake_length;
+} l_s_player_t;
+
+/*  */
+typedef struct {
+	/*  */
+	SDL_Rect s_coord;
+	/*  */
+	bool active;
+	/*  */
+	uint32_t u32_food_number;
+} l_s_food_t;
+
+/* ---------------------- LOCAL FUNCTION PROTOTYPES ---------------------- */
+/*  */
+static void l_draw_player_f ( SDL_Renderer *p_sp_renderer, const l_s_player_t *p_sp_player );
+/*  */
+static void l_step_player_f ( l_s_player_t *p_sp_player );
+/*  */
+static void l_draw_food_f ( SDL_Renderer *p_sp_renderer, const l_s_food_t *food );
+/*  */
+static l_e_direction_t l_get_dir_from_key_f ( SDL_Scancode scancode );
+/*  */
+static Uint32 l_timer_callback_f ( Uint32 ms, void *param );
+
+/* ---------------------- STATIC VARIABLES ---------------------- */
+/*  */
+static uint32_t l_u32_timer_limit = 10;
+/*  */
+static uint32_t l_u32_random_place_x;
+/*  */
+static uint32_t l_u32_random_place_y;
+
+/* ---------------------- LOCAL FUNCTION "kifejtések" ---------------------- */
+static l_e_direction_t l_get_dir_from_key_f ( SDL_Scancode scancode ) {
+	l_e_direction_t result = DIR_STOP;
 
 	switch ( scancode ){
 		case SDL_SCANCODE_SPACE:
@@ -115,7 +157,7 @@ static direction_t get_dir_from_key ( SDL_Scancode scancode ) {
 	return result;
 }
 
-static Uint32 timer_callback ( Uint32 ms, void *param ) {
+static Uint32 l_timer_callback_f ( Uint32 ms, void *param ) {
 
 	SDL_Event event;
 	SDL_UserEvent userevent;
@@ -123,7 +165,7 @@ static Uint32 timer_callback ( Uint32 ms, void *param ) {
 	static uint32_t timer_cnt = 0;
 
 	timer_cnt++;
-	if ( timer_cnt < timer_limit ) {
+	if ( timer_cnt < l_u32_timer_limit ) {
 		return ms;
 	}
 	timer_cnt = 0;
@@ -145,54 +187,43 @@ static Uint32 timer_callback ( Uint32 ms, void *param ) {
 	return ( ms );
 }
 
-#if 0
-//Player törlése, háttér kirajzolása, nem kell a függvény lassan.
-
-void clear_player ( SDL_Renderer *renderer, const SDL_Rect *player ) {
-
-	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
-	SDL_RenderFillRect ( renderer, player );
-
-}
-#endif
-
 //Player kirajzolása
-static void draw_player ( SDL_Renderer *renderer, const player_t *player ) {
-	uint32_t index;
+static void l_draw_player_f ( SDL_Renderer *renderer, const l_s_player_t *p_sp_player ) {
+	uint32_t l_u32_index;
 
 	SDL_SetRenderDrawColor ( renderer, 0, 0, 0, 255 );
 
-	for ( index = 0; index < player->snake_length; index++ ) {
-		SDL_RenderFillRect ( renderer, &player->snake[index] );
+	for ( l_u32_index = 0; l_u32_index < p_sp_player->u32_snake_length; l_u32_index++ ) {
+		SDL_RenderFillRect ( renderer, &p_sp_player->snake[l_u32_index] );
 	}
 
 }
 
 //Player léptetése 1-et fel, balra, ...
-static void step_player ( player_t *player ) {
-	uint32_t index;
+static void l_step_player_f ( l_s_player_t *p_sp_player ) {
+	uint32_t l_u32_index;
 
 	//A kígyó teste lép egyet
-	if ( player->snake_length == 0 )
+	if ( p_sp_player->u32_snake_length == 0 )
 			return;
 
-	for ( index = player->snake_length - 1; index > 0; index-- ){
+	for ( l_u32_index = p_sp_player->u32_snake_length - 1; l_u32_index > 0; l_u32_index-- ){
 
-		player->snake[index] = player->snake[index - 1];
+		p_sp_player->snake[l_u32_index] = p_sp_player->snake[l_u32_index - 1];
 	}
 
 	//A kígyó feje lép egyet (először rálép a fejére a teste. :D )
-	SDL_Rect *snake_head = &player->snake[0];
+	SDL_Rect *snake_head = &p_sp_player->snake[0];
 
-	if(DIR_STOP == player->dir) {
+	if ( DIR_STOP == p_sp_player->dir ) {
     	return;
   	}
 
-	switch ( player->dir ) {
+	switch ( p_sp_player->dir ) {
 		case DIR_UP:
 			snake_head->y -= snake_head->h;
 			break;
-						
+
 		case DIR_LEFT:
 			snake_head->x -= snake_head->w;
 			break;
@@ -211,36 +242,47 @@ static void step_player ( player_t *player ) {
 
 	//Itt ha felfele kimegy a képernyőről, akkor alul bejön az y tengelyen.
 	if ( snake_head->y < 0 ) {
-        snake_head->y = WINDOW_HEIGTH - snake_head->h;
+        snake_head->y = L_U32_WINDOW_HEIGTH - snake_head->h;
     }
-    snake_head->y %= WINDOW_HEIGTH; //Ez meg a maradék, tehát ha alul kimegy, felül bejön...
+    snake_head->y %= L_U32_WINDOW_HEIGTH; //Ez meg a maradék, tehát ha alul kimegy, felül bejön...
 
 	//Ha a játékos balra kimegy a képernyőről, jobbra bejön és! ha jobbra kimegy, balra bejön...
 	if ( snake_head->x < 0 ) {
-        snake_head->x = WINDOW_WIDTH - snake_head->w;
+        snake_head->x = L_U32_WINDOW_WIDTH - snake_head->w;
     }
-    snake_head->x %= WINDOW_WIDTH;
+    snake_head->x %= L_U32_WINDOW_WIDTH;
 
 }
 
-static void draw_food ( SDL_Renderer *renderer, const food_t *food ) {
+static void l_draw_food_f ( SDL_Renderer *p_sp_renderer, const l_s_food_t *food ) {
 
-	SDL_SetRenderDrawColor ( renderer, 255, 0, 0, 255 );
-	SDL_RenderFillRect ( renderer, &food->coord );
-
-}
-
-#if 0
-//A player mozgatása
-void move_player ( SDL_Renderer *renderer, SDL_Rect *player, direction_t dir ) {
-
-	clear_player ( renderer, player );
-	step_player ( player, dir );
-	draw_player ( renderer, player );
+	SDL_SetRenderDrawColor ( p_sp_renderer, 255, 0, 0, 255 );
+	SDL_RenderFillRect ( p_sp_renderer, &food->s_coord );
 
 }
-#endif
 
+/* ---------------------- STRUCTURE INIT ---------------------- */
+/*  */
+static l_s_player_t p_sp_player = { 
+		.dir = DIR_RIGHT, 
+		.u32_snake_length = 3,
+		.snake = { 
+			{ .x = 3 * L_U32_SCALE, .y = 0, .h = L_U32_SCALE, .w = L_U32_SCALE }, 
+			{ .x = 2 * L_U32_SCALE, .y = 0, .h = L_U32_SCALE, .w = L_U32_SCALE }, 
+			{ .x = L_U32_SCALE, .y = 0, .h = L_U32_SCALE, .w = L_U32_SCALE }
+		}
+};
+
+/*  */
+static l_s_food_t food;
+
+/**
+  *
+  *	DOXIGEN
+  *
+  */
+
+/* ---------------------- MAIN ---------------------- */
 int main ( int argc, char* args[] ){
 	bool quit = false;
 
@@ -248,16 +290,16 @@ int main ( int argc, char* args[] ){
  	SDL_Window *window = NULL;
 
 	//Render
-	SDL_Renderer *renderer = NULL;
+	SDL_Renderer *p_sp_renderer = NULL;
 
 	//SDL key event
 	SDL_Event event;
 
 	//Direction default values
-	direction_t dir = DIR_STOP;
+	l_e_direction_t dir = DIR_STOP;
 
 	//SDL inicializálása
-	if( SDL_Init ( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 ){
+	if ( SDL_Init ( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 ) {
 		fprintf ( stderr, "SDL-t nem sikerült inicializálni! SDL_Error: %s\n", SDL_GetError() );
 		exit ( EXIT_FAILURE );
 	}
@@ -266,34 +308,34 @@ int main ( int argc, char* args[] ){
 
 	window = SDL_CreateWindow ( "SNAKE 1.0b", 
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-		WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
+		L_U32_WINDOW_WIDTH, L_U32_WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
 	if ( window == NULL ) {
 		fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
 		exit (1);
 	}
 
  	//SDL renderer létrehozása
- 	renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
+ 	p_sp_renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
 
  	srand ( time ( NULL ) );
 
-	random_place_x = rand() % ( ( ( WINDOW_WIDTH  / SCALE ) - 1 ) + 1 );
-	random_place_y = rand() % ( ( ( WINDOW_HEIGTH / SCALE ) - 1 ) + 1 );
+	l_u32_random_place_x = rand() % ( ( ( L_U32_WINDOW_WIDTH  / L_U32_SCALE ) - 1 ) + 1 );
+	l_u32_random_place_y = rand() % ( ( ( L_U32_WINDOW_HEIGTH / L_U32_SCALE ) - 1 ) + 1 );
 
 	food.active = true;
-	food.food_number = 1;
-	food.coord.x = SCALE * random_place_x;
-	food.coord.y = SCALE * random_place_y;
-	food.coord.h = SCALE;
-	food.coord.w = SCALE;
+	food.u32_food_number = 1;
+	food.s_coord.x = L_U32_SCALE * l_u32_random_place_x;
+	food.s_coord.y = L_U32_SCALE * l_u32_random_place_y;
+	food.s_coord.h = L_U32_SCALE;
+	food.s_coord.w = L_U32_SCALE;
 
-	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
-	SDL_RenderClear ( renderer );
-	draw_player ( renderer, &player );
-	SDL_RenderPresent ( renderer );
+	SDL_SetRenderDrawColor ( p_sp_renderer, 255, 255, 255, 255 );
+	SDL_RenderClear ( p_sp_renderer );
+	l_draw_player_f ( p_sp_renderer, &p_sp_player );
+	SDL_RenderPresent ( p_sp_renderer );
 
 	//Timer
-	SDL_TimerID timer_id = SDL_AddTimer ( 10, timer_callback, NULL );
+	SDL_TimerID timer_id = SDL_AddTimer ( 10, l_timer_callback_f, NULL );
 
  	//Main loop! :)
 	while ( !quit ) {
@@ -304,7 +346,7 @@ int main ( int argc, char* args[] ){
 					break;
 
 				case SDL_USEREVENT:
-					step_player ( &player );
+					l_step_player_f ( &p_sp_player );
 					break;
 
 				case SDL_KEYDOWN:
@@ -314,21 +356,21 @@ int main ( int argc, char* args[] ){
 							quit = true;
 							break;
 						case SDLK_m:
-							if ( timer_limit > 1 ) {
-								timer_limit--;
+							if ( l_u32_timer_limit > 1 ) {
+								l_u32_timer_limit--;
 							}
 							break;
 
 						case SDLK_n:
-							if ( timer_limit < 20 ) {
-								timer_limit++;
+							if ( l_u32_timer_limit < 20 ) {
+								l_u32_timer_limit++;
 							}
 							break;
 					}
 
 					//Irányítás
-					direction_t new_dir = get_dir_from_key ( event.key.keysym.scancode );
-					dir = player.dir;
+					l_e_direction_t new_dir = l_get_dir_from_key_f ( event.key.keysym.scancode );
+					dir = p_sp_player.dir;
 					
 					switch ( new_dir ) {
 						case DIR_STOP:
@@ -362,23 +404,23 @@ int main ( int argc, char* args[] ){
 						default:
 							break;
 					}
-					player.dir = dir;
+					p_sp_player.dir = dir;
 
 					break;
 			}
 
-			SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
-			SDL_RenderClear ( renderer );
-			draw_player ( renderer, &player );
-			draw_food ( renderer, &food);
-			SDL_RenderPresent ( renderer );
+			SDL_SetRenderDrawColor ( p_sp_renderer, 255, 255, 255, 255 );
+			SDL_RenderClear ( p_sp_renderer );
+			l_draw_player_f ( p_sp_renderer, &p_sp_player );
+			l_draw_food_f ( p_sp_renderer, &food);
+			SDL_RenderPresent ( p_sp_renderer );
 		}
 		else{
 			SDL_Delay ( 1000 );
 		}
 	}
 
-	SDL_DestroyRenderer ( renderer );
+	SDL_DestroyRenderer ( p_sp_renderer );
 	SDL_DestroyWindow ( window );
 	SDL_RemoveTimer ( timer_id );
 	SDL_Quit ();
