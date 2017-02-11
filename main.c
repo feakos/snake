@@ -304,12 +304,10 @@ int main ( int argc, char* args[] ){
  	//SDL renderer létrehozása
  	renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
 
- 	srand ( time (NULL) );
+ 	srand ( time ( NULL ) );
 
-	random_place_x = rand() % 20 + 1;
-	random_place_y = rand() % 20 + 1;
-
-	printf ( "x: %i\ny: %i\n", random_place_x, random_place_y );
+	random_place_x = rand() % ( ( ( WINDOW_WIDTH  / SCALE ) - 1 ) + 1 );
+	random_place_y = rand() % ( ( ( WINDOW_HEIGTH / SCALE ) - 1 ) + 1 );
 
 	food.active = true;
 	food.food_number = 1;
