@@ -80,31 +80,6 @@ Ha megvan az, hogy hány elemű a pálya, akkor lemodulózod % azt az értéket,
 time.h
 */
 
-#if 0
-bool CreateWindow ( ) {
-	SDL_Window *window = SDL_CreateWindow ( "SNAKE beta 1.0", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-			WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
-
-	if ( window == NULL ) {
-	 	fprintf ( stderr, "Az ablakot nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
-		return false;
-	}
-
-	return true;
-}
-
-bool CreateRenderer ( SDL_Window *window ) {
-	SDL_Renderer *renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
-
-	if ( renderer == NULL ) {
-	 	fprintf ( stderr, "A renderer-t nem sikerült létrehozni! SDL_Error: %s\n", SDL_GetError() );
-		return false;
-	}
-
-	return true;
-}
-#endif
-
 static direction_t get_dir_from_key ( SDL_Scancode scancode ) {
 	direction_t result = DIR_STOP;
 
@@ -250,7 +225,7 @@ static void step_player ( player_t *player ) {
 
 static void draw_food ( SDL_Renderer *renderer, const food_t *food ) {
 
-	SDL_SetRenderDrawColor ( renderer, 0, 255, 0, 255 );
+	SDL_SetRenderDrawColor ( renderer, 255, 0, 0, 255 );
 	SDL_RenderFillRect ( renderer, &food->coord );
 
 }
@@ -281,18 +256,14 @@ int main ( int argc, char* args[] ){
 	//Direction default values
 	direction_t dir = DIR_STOP;
 
-	//Player
-	//SDL_Rect player = { 0, 0, SCALE, SCALE };
-
 	//SDL inicializálása
 	if( SDL_Init ( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 ){
 		fprintf ( stderr, "SDL-t nem sikerült inicializálni! SDL_Error: %s\n", SDL_GetError() );
 		exit ( EXIT_FAILURE );
 	}
-	//SDL window és renderer egyszerre
-	//SDL_CreateWindowAndRenderer ( );
 
 	//SDL ablak létrehozása
+
 	window = SDL_CreateWindow ( "SNAKE 1.0b", 
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
 		WINDOW_WIDTH, WINDOW_HEIGTH, SDL_WINDOW_OPENGL );
@@ -327,67 +298,73 @@ int main ( int argc, char* args[] ){
  	//Main loop! :)
 	while ( !quit ) {
 		if ( SDL_WaitEvent ( &event ) != 0 ) {
-			if ( event.type == SDL_QUIT ) { 
-				quit = true;
-			}			
-			
-			if ( event.type == SDL_USEREVENT ) { 
-				step_player ( &player );
-			}			
+			switch ( event.type ){
+				case SDL_QUIT:
+					quit = true;
 
-			if ( event.type == SDL_KEYDOWN ) {
+				case SDL_USEREVENT:
+					step_player ( &player );
 
-				//Kilépés, speedUP, ...				
-				switch ( event.key.keysym.sym ){
-					case SDLK_q:
-						quit = true;
-						break;
-					case SDLK_m:
-						if ( timer_limit > 1 ) timer_limit--;
-						break;
+				case SDL_KEYDOWN:
+					//Kilépés, speedUP, ...				
+					switch ( event.key.keysym.sym ) {
+						case SDLK_q:
+							quit = true;
+							break;
+						case SDLK_m:
+							if ( timer_limit > 1 ) {
+								timer_limit--;
+							}
+							break;
 
-					case SDLK_n:
-						if ( timer_limit < 20 ) timer_limit++;
-						break;
-				}
+						case SDLK_n:
+							if ( timer_limit < 20 ) {
+								timer_limit++;
+							}
+							break;
+					}
 
-				//Irányítás
-				direction_t new_dir = get_dir_from_key ( event.key.keysym.scancode );
-				dir = player.dir;
-				switch ( new_dir ) {
-					case DIR_STOP:
-						dir = new_dir;
-						break;
-
-					case DIR_UP:
-						if ( dir != DIR_DOWN ) {
-							dir = new_dir;
-						}
-						break;
-						
-					case DIR_LEFT:
-						if ( dir != DIR_RIGHT ) {
-							dir = new_dir;
-						}
-						break;
-						
-					case DIR_DOWN:
-						if ( dir != DIR_UP ) {
-							dir = new_dir;
-						}
-						break;
+					//Irányítás
+					direction_t new_dir = get_dir_from_key ( event.key.keysym.scancode );
+					dir = player.dir;
 					
-					case DIR_RIGHT:
-						if ( dir != DIR_LEFT ) {
+					switch ( new_dir ) {
+						case DIR_STOP:
 							dir = new_dir;
-						}
-						break;
+							break;
+
+						case DIR_UP:
+							if ( dir != DIR_DOWN ) {
+								dir = new_dir;
+							}
+							break;
+							
+						case DIR_LEFT:
+							if ( dir != DIR_RIGHT ) {
+								dir = new_dir;
+							}
+							break;
+							
+						case DIR_DOWN:
+							if ( dir != DIR_UP ) {
+								dir = new_dir;
+							}
+							break;
 						
-					default:
-						break;
-				}
-				player.dir = dir;
+						case DIR_RIGHT:
+							if ( dir != DIR_LEFT ) {
+								dir = new_dir;
+							}
+							break;
+							
+						default:
+							break;
+					}
+					player.dir = dir;
+
+					break;
 			}
+
 			SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 			SDL_RenderClear ( renderer );
 			draw_player ( renderer, &player );
