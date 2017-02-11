@@ -301,9 +301,11 @@ int main ( int argc, char* args[] ){
 			switch ( event.type ){
 				case SDL_QUIT:
 					quit = true;
+					break;
 
 				case SDL_USEREVENT:
 					step_player ( &player );
+					break;
 
 				case SDL_KEYDOWN:
 					//Kilépés, speedUP, ...				
