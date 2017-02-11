@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <time.h>
 #include <stdbool.h>
 #include <SDL2/SDL.h> //Main SDL library
 #include <SDL2/SDL_ttf.h> //Optional SDL library used to display text using renderers
@@ -63,19 +64,15 @@ static player_t player = {
 };
 
 typedef struct {
-	SDL_Rect food;
+	SDL_Rect coord;
 	bool active;
 	uint32_t food_number;
 } food_t;
 
+uint32_t random_place_x;
+uint32_t random_place_y;
 
-static food_t food = { 
-		.active = true, 
-		.food_number = 1,
-		.food = { .x = SCALE * 10, .y = SCALE * 5, .h = SCALE, .w = SCALE }
-};
-
-
+static food_t food;
 
 /*
 Ha megvan az, hogy hány elemű a pálya, akkor lemodulózod % azt az értéket, amit kaptál a rand-tól.
@@ -254,7 +251,7 @@ static void step_player ( player_t *player ) {
 static void draw_food ( SDL_Renderer *renderer, const food_t *food ) {
 
 	SDL_SetRenderDrawColor ( renderer, 0, 255, 0, 255 );
-	SDL_RenderFillRect ( renderer, &food->food );
+	SDL_RenderFillRect ( renderer, &food->coord );
 
 }
 
@@ -306,6 +303,20 @@ int main ( int argc, char* args[] ){
 
  	//SDL renderer létrehozása
  	renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
+
+ 	srand ( time (NULL) );
+
+	random_place_x = rand() % 20 + 1;
+	random_place_y = rand() % 20 + 1;
+
+	printf ( "x: %i\ny: %i\n", random_place_x, random_place_y );
+
+	food.active = true;
+	food.food_number = 1;
+	food.coord.x = SCALE * random_place_x;
+	food.coord.y = SCALE * random_place_y;
+	food.coord.h = SCALE;
+	food.coord.w = SCALE;
 
 	SDL_SetRenderDrawColor ( renderer, 255, 255, 255, 255 );
 	SDL_RenderClear ( renderer );
