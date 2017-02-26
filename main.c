@@ -170,7 +170,7 @@ static Uint32 l_timer_callback_f ( Uint32 ms, void *param ) {
 	}
 	timer_cnt = 0;
 
-	//Stacken jön létre. Azokkal az értékekkel jön létre, ami a stack-en volt, ezért ki kellett nullázni!
+	/* Stacken jön létre. Azokkal az értékekkel jön létre, ami a stack-en volt, ezért ki kellett nullázni! */
 	memset ( &event, 0, sizeof ( event ) );
 	memset ( &userevent, 0, sizeof ( userevent ) );
 
@@ -187,7 +187,7 @@ static Uint32 l_timer_callback_f ( Uint32 ms, void *param ) {
 	return ( ms );
 }
 
-//Player kirajzolása
+/* Player kirajzolása */
 static void l_draw_player_f ( SDL_Renderer *renderer, const l_s_player_t *p_sp_player ) {
 	uint32_t l_u32_index;
 
@@ -199,11 +199,11 @@ static void l_draw_player_f ( SDL_Renderer *renderer, const l_s_player_t *p_sp_p
 
 }
 
-//Player léptetése 1-et fel, balra, ...
+/* Player léptetése 1-et fel, balra, ... */
 static void l_step_player_f ( l_s_player_t *p_sp_player ) {
 	uint32_t l_u32_index;
 
-	//A kígyó teste lép egyet
+	/* A kígyó teste lép egyet */
 	if ( p_sp_player->u32_snake_length == 0 )
 			return;
 
@@ -212,7 +212,7 @@ static void l_step_player_f ( l_s_player_t *p_sp_player ) {
 		p_sp_player->snake[l_u32_index] = p_sp_player->snake[l_u32_index - 1];
 	}
 
-	//A kígyó feje lép egyet (először rálép a fejére a teste. :D )
+	/* A kígyó feje lép egyet (először rálép a fejére a teste. :D ) */
 	SDL_Rect *snake_head = &p_sp_player->snake[0];
 
 	if ( DIR_STOP == p_sp_player->dir ) {
@@ -240,13 +240,13 @@ static void l_step_player_f ( l_s_player_t *p_sp_player ) {
 			break;
 	}
 
-	//Itt ha felfele kimegy a képernyőről, akkor alul bejön az y tengelyen.
+	/* Itt ha felfele kimegy a képernyőről, akkor alul bejön az y tengelyen. */
 	if ( snake_head->y < 0 ) {
         snake_head->y = L_U32_WINDOW_HEIGTH - snake_head->h;
     }
-    snake_head->y %= L_U32_WINDOW_HEIGTH; //Ez meg a maradék, tehát ha alul kimegy, felül bejön...
+    snake_head->y %= L_U32_WINDOW_HEIGTH; /* Ez meg a maradék, tehát ha alul kimegy, felül bejön... */
 
-	//Ha a játékos balra kimegy a képernyőről, jobbra bejön és! ha jobbra kimegy, balra bejön...
+	/* Ha a játékos balra kimegy a képernyőről, jobbra bejön és! ha jobbra kimegy, balra bejön... */
 	if ( snake_head->x < 0 ) {
         snake_head->x = L_U32_WINDOW_WIDTH - snake_head->w;
     }
@@ -286,25 +286,25 @@ static l_s_food_t food;
 int main ( int argc, char* args[] ){
 	bool quit = false;
 
-	//Window
+	/* Window */
  	SDL_Window *window = NULL;
 
-	//Render
+	/* Render */
 	SDL_Renderer *p_sp_renderer = NULL;
 
-	//SDL key event
+	/* SDL key event */
 	SDL_Event event;
 
-	//Direction default values
+	/* Direction default values */
 	l_e_direction_t dir = DIR_STOP;
 
-	//SDL inicializálása
+	/* SDL inicializálása */
 	if ( SDL_Init ( SDL_INIT_VIDEO | SDL_INIT_TIMER ) < 0 ) {
 		fprintf ( stderr, "SDL-t nem sikerült inicializálni! SDL_Error: %s\n", SDL_GetError() );
 		exit ( EXIT_FAILURE );
 	}
 
-	//SDL ablak létrehozása
+	/* SDL ablak létrehozása */
 
 	window = SDL_CreateWindow ( "SNAKE 1.0b", 
 		SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
@@ -314,7 +314,7 @@ int main ( int argc, char* args[] ){
 		exit (1);
 	}
 
- 	//SDL renderer létrehozása
+ 	/* SDL renderer létrehozása */
  	p_sp_renderer = SDL_CreateRenderer ( window, -1, SDL_RENDERER_ACCELERATED );
 
  	srand ( time ( NULL ) );
@@ -334,10 +334,10 @@ int main ( int argc, char* args[] ){
 	l_draw_player_f ( p_sp_renderer, &p_sp_player );
 	SDL_RenderPresent ( p_sp_renderer );
 
-	//Timer
+	/* Timer */
 	SDL_TimerID timer_id = SDL_AddTimer ( 10, l_timer_callback_f, NULL );
 
- 	//Main loop! :)
+ 	/* Main loop! :) */
 	while ( !quit ) {
 		if ( SDL_WaitEvent ( &event ) != 0 ) {
 			switch ( event.type ){
@@ -350,7 +350,7 @@ int main ( int argc, char* args[] ){
 					break;
 
 				case SDL_KEYDOWN:
-					//Kilépés, speedUP, ...				
+					/* Kilépés, speedUP, ...	*/
 					switch ( event.key.keysym.sym ) {
 						case SDLK_q:
 							quit = true;
@@ -368,7 +368,7 @@ int main ( int argc, char* args[] ){
 							break;
 					}
 
-					//Irányítás
+					/* Irányítás */
 					l_e_direction_t new_dir = l_get_dir_from_key_f ( event.key.keysym.scancode );
 					dir = p_sp_player.dir;
 					
