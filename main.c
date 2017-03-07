@@ -162,13 +162,13 @@ static Uint32 l_timer_callback_f ( Uint32 ms, void *param ) {
 	SDL_Event event;
 	SDL_UserEvent userevent;
 
-	static uint32_t timer_cnt = 0;
+	static uint32_t l_u32_timer_cnt = 0;
 
-	timer_cnt++;
-	if ( timer_cnt < l_u32_timer_limit ) {
+	l_u32_timer_cnt++;
+	if ( l_u32_timer_cnt < l_u32_timer_limit ) {
 		return ms;
 	}
-	timer_cnt = 0;
+	l_u32_timer_cnt = 0;
 
 	/* Stacken jön létre. Azokkal az értékekkel jön létre, ami a stack-en volt, ezért ki kellett nullázni! */
 	memset ( &event, 0, sizeof ( event ) );
@@ -199,7 +199,7 @@ static void l_draw_player_f ( SDL_Renderer *renderer, const l_s_player_t *p_sp_p
 
 }
 
-/* Player léptetése 1-et fel, balra, ... */
+/* Player léptetése 1-et fel, balra, jobbra, le */
 static void l_step_player_f ( l_s_player_t *p_sp_player ) {
 	uint32_t l_u32_index;
 
@@ -208,7 +208,6 @@ static void l_step_player_f ( l_s_player_t *p_sp_player ) {
 			return;
 
 	for ( l_u32_index = p_sp_player->u32_snake_length - 1; l_u32_index > 0; l_u32_index-- ){
-
 		p_sp_player->snake[l_u32_index] = p_sp_player->snake[l_u32_index - 1];
 	}
 
