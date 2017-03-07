@@ -45,8 +45,20 @@ void l_draw_all_f ();
 
 /* food, player init egy függvényből legyen */
 
+/**
+ * @file template.c SNAKE
+ * @brief C source template SNAKE
+ *
+ * $Revision: $
+ * $Date: $
+ *
+ * Detailed description of this file. SNAKE
+ *
+ * Author: Akos Fekete
+ * Copyright (C) 2017.03.07
+ */
 
-/* ---------------------- INCLUDES ---------------------- */
+/*================================[ INCLUDES ]===============================*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -55,12 +67,13 @@ void l_draw_all_f ();
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
-/* ---------------------- DEFINE & TYPES ---------------------- */
+/*================================[ INTERNAL MACROS ]========================*/
 #define L_U32_WINDOW_WIDTH 400
 #define L_U32_WINDOW_HEIGTH 400
 #define L_U32_SCALE 20
 #define L_U32_MAX_SNAKE_LENGTH 100
 
+/*================================[ INTERNAL TYPEDEFS ]======================*/
 /* Directions */
 typedef enum { 
 	/*  */
@@ -101,7 +114,7 @@ typedef struct {
 	uint32_t u32_food_number;
 } l_s_food_t;
 
-/* ---------------------- LOCAL FUNCTION PROTOTYPES ---------------------- */
+/*================================[ INTERNAL FUNCTION PROTOTYPES ]===========*/
 /*  */
 static void l_draw_player_f ( SDL_Renderer *p_sp_renderer, const l_s_player_t *p_sp_player );
 /*  */
@@ -113,7 +126,7 @@ static l_e_direction_t l_get_dir_from_key_f ( SDL_Scancode scancode );
 /*  */
 static Uint32 l_timer_callback_f ( Uint32 ms, void *param );
 
-/* ---------------------- STATIC VARIABLES ---------------------- */
+/*================================[ INTERNAL GLOBALS ]=======================*/
 /*  */
 static uint32_t l_u32_timer_limit = 10;
 /*  */
@@ -121,7 +134,7 @@ static uint32_t l_u32_random_place_x;
 /*  */
 static uint32_t l_u32_random_place_y;
 
-/* ---------------------- LOCAL FUNCTION "kifejtések" ---------------------- */
+/*================================[ INTERNAL FUNCTION DEFINITIONS ]==========*/
 static l_e_direction_t l_get_dir_from_key_f ( SDL_Scancode scancode ) {
 	l_e_direction_t result = DIR_STOP;
 
@@ -260,7 +273,7 @@ static void l_draw_food_f ( SDL_Renderer *p_sp_renderer, const l_s_food_t *p_sp_
 
 }
 
-/* ---------------------- STRUCTURE INIT ---------------------- */
+/*================================[ STRUCTURE INIT ]======================*/
 /*  */
 static l_s_player_t p_sp_player = { 
 		.dir = DIR_RIGHT, 
@@ -281,7 +294,7 @@ static l_s_food_t food;
   *
   */
 
-/* ---------------------- MAIN ---------------------- */
+/*================================[ MAIN ]======================*/
 int main ( int argc, char* args[] ){
 	bool quit = false;
 
