@@ -65,7 +65,7 @@ void l_draw_all_f ();
 #include <stdint.h>
 #include <time.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+/* #include <SDL2/SDL_ttf.h> */
 
 /*================================[ INTERNAL MACROS ]========================*/
 #define L_U32_WINDOW_WIDTH 400
